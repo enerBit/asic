@@ -1,20 +1,89 @@
 # ASIC
 
+Interfaz de línea de comandos para descargar los archivos de las publicaciones de liquidación del Mercado de Energía Mayorista MEM realizadas por el Administrador del Sistema de Intercambios Comerciales ASIC.
+
+## Ejemplos
+
+1. Cuales versiones de liquidación se han publicado en los últimos días:
+
 ```txt
-_____/\\\\\\\\\________/\\\\\\\\\\\____/\\\\\\\\\\\________/\\\\\\\\\_        
- ___/\\\\\\\\\\\\\____/\\\/////////\\\_\/////\\\///______/\\\////////__       
-  __/\\\/////////\\\__\//\\\______\///______\/\\\_______/\\\/___________      
-   _\/\\\_______\/\\\___\////\\\_____________\/\\\______/\\\_____________     
-    _\/\\\\\\\\\\\\\\\______\////\\\__________\/\\\_____\/\\\_____________    
-     _\/\\\/////////\\\_________\////\\\_______\/\\\_____\//\\\____________   
-      _\/\\\_______\/\\\__/\\\______\//\\\______\/\\\______\///\\\__________  
-       _\/\\\_______\/\\\_\///\\\\\\\\\\\/____/\\\\\\\\\\\____\////\\\\\\\\\_ 
-        _\///________\///____\///////////_____\///////////________\/////////__
+> asic pubs --days-old 20
+Listing latest published settlements by ASIC in the last 20 days
+2022-05:TX3 -- published: 2022-07-19
+2022-06:TXR -- published: 2022-07-05
 ```
+
+1. Listar los archivos publicados para los meses de mayo y junio de 2022 con version de liquidación .tx3:
+
+```txt
+> asic list --month 2022-06 --month 2022-05 --version .tx3
+\PublicoK\SIC\COMERCIA\2022-05\adem0501.Tx3
+\PublicoK\SIC\COMERCIA\2022-05\adem0502.Tx3
+\PublicoK\SIC\COMERCIA\2022-05\adem0503.Tx3
+\PublicoK\SIC\COMERCIA\2022-05\adem0504.Tx3
+          ...
+\PublicoK\SIC\COMERCIA\2022-05\pep0530.tx3
+\PublicoK\SIC\COMERCIA\2022-05\pep0531.tx3
+\PublicoK\SIC\COMERCIA\2022-05\sntie05.tx3
+\PublicoK\SIC\COMERCIA\2022-05\afac05.tx3
+\PublicoK\SIC\COMERCIA\2022-05\trsm05.tx3
+\PublicoK\SIC\COMERCIA\2022-05\ldcbmr05.tx3
+```
+
+1. Descargar los archivos publicados para los meses de mayo y junio de 2022 con version de liquidación .tx3 a la carpeta local `./asic-files/`:
+
+```txt
+> asic download --month 2022-06 --month 2022-05 --version .tx3 asic-files
+Dowloading files... ━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━   6% 0:01:05
+```
+
 
 ## CLI
 
 Interfaz de línea de comandos (CLI).
 
+### Instalación
+
+1. Crear un ambiente virtual de python
+
+```sh
+python -m venv venv
+```
+
+1. Activar el ambiente virtual
+
+```sh
+.\venv\Scripts\activate
+```
+
+1. Instalar paquete
+
+```sh
+python -m pip install asic
+```
+
+### Ejecución
+
+La CLI misma ofrece ayuda de como usarla.
+La opción `--help` imprime la ayuda de cada comando en la pantalla.
+
+```txt
+> asic --help 
+
+ Usage: asic [OPTIONS] COMMAND [ARGS]...
+
+ Commands:
+  download           Download files from asic's ftp server to local DESTINATION folder.
+  list               List files from asic's ftp server.
+  pubs               Check latest published settlements in asic's website. 
+```
+
+```txt
+> asic pubs --help
+
+ Usage: asic pubs [OPTIONS]
+
+ Check latest published settlements in asic's website.
+```
 
 ## Contribuir

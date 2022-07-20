@@ -1,0 +1,8 @@
+pytest
+flake8
+black
+mypy
+isort
+types-setuptools
+types-requests
+pandas-stubs
