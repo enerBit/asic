@@ -4,6 +4,14 @@ Interfaz de línea de comandos para descargar los archivos de las publicaciones 
 
 ## Ejemplos
 
+Antes de poder usar los comandos que usan el servir FTP de XM, debes proveer la información de autenticación (recomendamos usar variables de entorno).
+
+```txt
+$Env:ASIC_FTP_HOST = "sv01.xm.com.co"
+$Env:ASIC_FTP_USER = "Isamdnt\88888888"
+$Env:ASIC_FTP_PASSWORD = "m1MuySeCreTAClAV."
+```
+
 1. Cuales versiones de liquidación se han publicado en los últimos días:
 
 ```txt
