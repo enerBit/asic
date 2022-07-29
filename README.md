@@ -2,9 +2,15 @@
 
 Interfaz de línea de comandos para descargar los archivos de las publicaciones de liquidación del Mercado de Energía Mayorista MEM realizadas por el Administrador del Sistema de Intercambios Comerciales ASIC.
 
+------
+
+> **Requiere acceso al FTP del ASIC en `sv01.xm.com.co`**
+
+------
+
 ## Ejemplos
 
-Antes de poder usar los comandos que usan el servir FTP de XM, debes proveer la información de autenticación (recomendamos usar variables de entorno).
+Antes de poder usar los comandos que usan el servir FTP de XM, debes proveer la información de autenticación (se recomienda usar variables de entorno).
 
 ```txt
 $Env:ASIC_FTP_HOST = "sv01.xm.com.co"
