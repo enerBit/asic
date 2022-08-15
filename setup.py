@@ -19,7 +19,7 @@ NAME = "asic"
 AUTHOR = "enerBit"
 AUTHOR_EMAIL = "jtamayoh@gmail.com"
 DESCRIPTION = "Download and format ASIC files"
-PROJECT_URL = "https://github.com/enerBit/asic.git"
+PROJECT_URL = "https://github.com/enerBit/asic"
 
 here = path.abspath(path.dirname(__file__))
 
@@ -196,6 +196,6 @@ setup(
     # maintainers, and where to support the project financially. The key is
     # what"s used to render the link text on PyPI.
     project_urls={  # Optional
-        "Source": "https://dev.azure.com/celsia-innovacion/enerbit/_git/enerbit.core.client.python",
+        "Source": PROJECT_URL + ".git",
     },
 )
