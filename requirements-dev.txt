@@ -6,3 +6,4 @@ isort
 types-setuptools
 types-requests
 pandas-stubs
+bumpversion
