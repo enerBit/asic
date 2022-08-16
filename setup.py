@@ -12,7 +12,7 @@ from io import open
 from os import path
 
 # Always prefer setuptools over distutils
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 # pygination
 NAME = "asic"
@@ -127,7 +127,7 @@ setup(
     #   py_modules=["my_module"],
     #
     package_dir={"": "src"},
-    packages=find_packages(where="src"),  # Required
+    packages=find_namespace_packages(where="src"),  # Required
     # Specify which Python versions you support. In contrast to the
     # "Programming Language" classifiers above, "pip install" will check this
     # and refuse to install the project if the version does not match. If you
