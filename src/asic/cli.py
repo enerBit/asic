@@ -3,6 +3,7 @@ import ftplib
 import logging
 import os
 import pathlib
+from ssl import SSLZeroReturnError
 from typing import Optional
 
 import typer
@@ -24,7 +25,7 @@ SUPPORTED_FILES_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_FILES}"
 SUPPORTED_EXTENSIONS = [e.lower() for e in ASIC_FILE_EXTENSION_MAP.keys()]
 SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_EXTENSIONS}"
 PUBLIC_SEARCHEABLE_LOCATIONS = [
-    r"/PublicoK/SIC/COMERCIA/{year:04d}-{month:02d}/",
+    r"/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/{year:04d}-{month:02d}/",
 ]
 PRIVATE_SEARCHEABLE_LOCATIONS = [
     r"/UsuariosK/{agent}/Sic/COMERCIA/{year:04d}-{month:02d}/",
@@ -52,8 +53,30 @@ def main(verbosity: int = typer.Option(0, "--verbosity", "-v", count=True)):
             logger.setLevel(logging.DEBUG)
 
 
-def parse_month(month: str) -> dt.date:
+def get_ftps(
+    ftps_host: str,
+    ftps_user: str,
+    ftps_password: str,
+    ftps_port: int,
+):
+    ftps = ftplib.FTP_TLS(
+        host=ftps_host,
+        encoding="Latin-1",
+        # timeout=10,
+    )
 
+    ftps.connect(
+        port=ftps_port,
+    )
+
+    ftps.login(user=ftps_user, passwd=ftps_password)
+
+    ftps.prot_p()
+
+    return ftps
+
+
+def parse_month(month: str) -> dt.date:
     for f in YEAR_MONTH_FORMATS:
         try:
             value = dt.datetime.strptime(month, f).date()
@@ -146,9 +169,12 @@ def list_files(
         callback=extensions_callback,
         help=SUPPORTED_EXTENSIONS_ERROR_MESSAGE,
     ),
-    ftp_host: str = typer.Argument(..., envvar="ASIC_FTP_HOST"),
-    ftp_user: str = typer.Argument(..., envvar="ASIC_FTP_USER"),
-    ftp_password: str = typer.Argument(..., envvar="ASIC_FTP_PASSWORD"),
+    ftps_host: str = typer.Argument(
+        default="xmftps.xm.com.co", envvar="ASIC_FTPS_HOST"
+    ),
+    ftps_user: str = typer.Argument(..., envvar="ASIC_FTPS_USER"),
+    ftps_password: str = typer.Argument(..., envvar="ASIC_FTPS_PASSWORD"),
+    ftps_port: int = typer.Argument(default=210, envvar="ASIC_FTPS_PORT"),
     # asic_raw_container_name: str = typer.Argument(
     #     "asic-raw", envvar="ASIC_RAW_CONTAINER_NAME"
     # ),
@@ -177,19 +203,24 @@ def list_files(
     if agent is not None:
         locations.extend(PRIVATE_SEARCHEABLE_LOCATIONS)
 
-    with ftplib.FTP(
-        host=ftp_host,
-        user=ftp_user,
-        passwd=ftp_password,
-    ) as ftp_aux:
-        file_list = list_supported_files(
-            ftp_aux,
-            agent=agent,
-            months=months,
-            extensions=extensions,
-            files=files,
-            locations=locations,
-        )
+    ftps = get_ftps(
+        ftps_host=ftps_host,
+        ftps_user=ftps_user,
+        ftps_password=ftps_password,
+        ftps_port=ftps_port,
+    )
+
+    file_list = list_supported_files(
+        ftps,
+        agent=agent,
+        months=months,
+        extensions=extensions,
+        files=files,
+        locations=locations,
+    )
+
+    ftps.quit()
+
     for f in file_list:
         typer.echo(f)
 
@@ -215,9 +246,12 @@ def download(
         help=SUPPORTED_EXTENSIONS_ERROR_MESSAGE,
     ),
     destination: pathlib.Path = typer.Argument(...),
-    ftp_host: str = typer.Argument(..., envvar="ASIC_FTP_HOST"),
-    ftp_user: str = typer.Argument(..., envvar="ASIC_FTP_USER"),
-    ftp_password: str = typer.Argument(..., envvar="ASIC_FTP_PASSWORD"),
+    ftps_host: str = typer.Argument(
+        default="xmftps.xm.com.co", envvar="ASIC_FTPS_HOST"
+    ),
+    ftps_user: str = typer.Argument(..., envvar="ASIC_FTPS_USER"),
+    ftps_password: str = typer.Argument(..., envvar="ASIC_FTPS_PASSWORD"),
+    ftps_port: int = typer.Argument(default=210, envvar="ASIC_FTPS_PORT"),
     # asic_raw_container_name: str = typer.Argument(
     #     "asic-raw", envvar="ASIC_RAW_CONTAINER_NAME"
     # ),
@@ -239,30 +273,41 @@ def download(
     if agent is not None:
         locations.extend(PRIVATE_SEARCHEABLE_LOCATIONS)
 
-    with ftplib.FTP(
-        host=ftp_host,
-        user=ftp_user,
-        passwd=ftp_password,
-    ) as ftp_aux:
-        file_list = list_supported_files(
-            ftp_aux,
-            agent=agent,
-            months=months,
-            extensions=extensions,
-            files=files,
-            locations=locations,
-        )
+    ftps = get_ftps(
+        ftps_host=ftps_host,
+        ftps_user=ftps_user,
+        ftps_password=ftps_password,
+        ftps_port=ftps_port,
+    )
+
+    file_list = list_supported_files(
+        ftps,
+        agent=agent,
+        months=months,
+        extensions=extensions,
+        files=files,
+        locations=locations,
+    )
 
     logger.info(f"Total files to download: {len(file_list)}")
 
-    with ftplib.FTP(
-        host=ftp_host,
-        user=ftp_user,
-        passwd=ftp_password,
-    ) as ftp_aux:
-        for f in track(file_list, description="Dowloading files..."):
-            remote = f
-            local = destination / str(f)[1:]  # hack to remove root anchor
-            os.makedirs(local.parent, exist_ok=True)
-            logger.info(f"Downloading {remote} to {local}")
-            grab_file(ftp_aux, remote, local)
+    for f in track(file_list, description="Dowloading files..."):
+        remote = f
+        local = destination / str(f)[1:]  # hack to remove root anchor
+        os.makedirs(local.parent, exist_ok=True)
+        logger.info(f"Downloading {remote} to {local}")
+
+        try:
+            grab_file(ftps, remote, local)
+
+        except SSLZeroReturnError:
+            ftps = get_ftps(
+                ftps_host=ftps_host,
+                ftps_user=ftps_user,
+                ftps_password=ftps_password,
+                ftps_port=ftps_port,
+            )
+
+            grab_file(ftps, remote, local)
+
+    ftps.quit()
