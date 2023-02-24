@@ -154,7 +154,6 @@ def list_latest_published_versions(
 
 
 if __name__ == "__main__":
-
     published_after = dt.datetime.today() - dt.timedelta(days=90)
     print(f"Keeping settlements published after {published_after}")
     newest_versions = list_latest_published_versions(published_after, True)
