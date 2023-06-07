@@ -11,8 +11,10 @@ from rich.progress import track
 
 from asic import ASIC_FILE_EXTENSION_MAP
 from asic.files import SupportedFiles
-from asic.ftp.ftp import grab_file  # list_supported_files_in_location,
-from asic.ftp.ftp import list_supported_files
+from asic.ftp.ftp import (
+    grab_file,  # list_supported_files_in_location,
+    list_supported_files,
+)
 from asic.publication import list_latest_published_versions
 
 logger = logging.getLogger("eds")
@@ -90,13 +92,13 @@ def parse_month(month: str) -> dt.date:
 
 
 def validate_file(file_code: str) -> str:
-    if not file_code.lower() in SUPPORTED_FILES:
+    if file_code.lower() not in SUPPORTED_FILES:
         raise typer.BadParameter(SUPPORTED_FILES_ERROR_MESSAGE)
     return file_code
 
 
 def validate_version(version: str) -> str:
-    if not version.lower() in SUPPORTED_EXTENSIONS:
+    if version.lower() not in SUPPORTED_EXTENSIONS:
         raise typer.BadParameter(SUPPORTED_EXTENSIONS_ERROR_MESSAGE)
     return version
 
@@ -151,6 +153,10 @@ def pubs(
 
 @cli.command("list")
 def list_files(
+    ftps_host: str = typer.Option(default="xmftps.xm.com.co", envvar="ASIC_FTPS_HOST"),
+    ftps_user: str = typer.Option(..., envvar="ASIC_FTPS_USER"),
+    ftps_password: str = typer.Option(..., envvar="ASIC_FTPS_PASSWORD"),
+    ftps_port: int = typer.Option(default=210, envvar="ASIC_FTPS_PORT"),
     months: list[str] = typer.Option(
         ...,
         "--month",
@@ -169,12 +175,6 @@ def list_files(
         callback=extensions_callback,
         help=SUPPORTED_EXTENSIONS_ERROR_MESSAGE,
     ),
-    ftps_host: str = typer.Argument(
-        default="xmftps.xm.com.co", envvar="ASIC_FTPS_HOST"
-    ),
-    ftps_user: str = typer.Argument(..., envvar="ASIC_FTPS_USER"),
-    ftps_password: str = typer.Argument(..., envvar="ASIC_FTPS_PASSWORD"),
-    ftps_port: int = typer.Argument(default=210, envvar="ASIC_FTPS_PORT"),
     # asic_raw_container_name: str = typer.Argument(
     #     "asic-raw", envvar="ASIC_RAW_CONTAINER_NAME"
     # ),

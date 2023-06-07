@@ -11,72 +11,44 @@ from ..metadata import FileItemInfo
 
 logger = logging.getLogger(__name__)
 
-ldcbmr_format = {
-    "type": "csv",
-    "sep": ";",
+pubfc_format = {
+    "type": "xlsx",
+    "sheet_name"
     "encoding": "cp1252",
-    "dt_fields": {"FECHA": {"format": "%Y-%m-%d"}},
+    "dt_fields": {
+        "Fecha de Reporte de la Falla": {"format": "%Y-%m-%d %H:%M:%S"},
+        "Fecha Máxima de Normalización": {"format": "%Y-%m-%d %H:%M:%S"},
+        "Fecha de Solicitud de Ampliación": {"format": "%Y-%m-%d %H:%M:%S"},
+    },
     "dtype": {
-        "FECHA": str,
-        "CODIGO": str,
-        "HORA 01": float,
-        "HORA 02": float,
-        "HORA 03": float,
-        "HORA 04": float,
-        "HORA 05": float,
-        "HORA 06": float,
-        "HORA 07": float,
-        "HORA 08": float,
-        "HORA 09": float,
-        "HORA 10": float,
-        "HORA 11": float,
-        "HORA 12": float,
-        "HORA 13": float,
-        "HORA 14": float,
-        "HORA 15": float,
-        "HORA 16": float,
-        "HORA 17": float,
-        "HORA 18": float,
-        "HORA 19": float,
-        "HORA 20": float,
-        "HORA 21": float,
-        "HORA 22": float,
-        "HORA 23": float,
-        "HORA 24": float,
+        "Código SIC": str,
+        "Tipo de Frontera": str,
+        "Equipo en Falla": str,
+        "Fecha de Reporte de la Falla": str,
+        "Fecha Máxima de Normalización": str,
+        "Días en Falla": int,
+        "Solicitó Ampliación de Plazo": str,
+        "Fecha de Solicitud de Ampliación": str,
+        "Requerimientos": str,
+        "Agente que Reportó la Falla": str,
+        "Agente Representante": str,
+        "Operador de Red": str,
     },
 }
 
 
-class LDCBMR(FileReader):
+class PUBFC(FileReader):
     def __init__(self):
-        return super().__init__(ldcbmr_format.copy())
+        return super().__init__(pubfc_format.copy())
 
 
-def ldcbmr_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
+def pubfc_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     """
     TRSM: se publica un archivo por mes.
     versiones: TXR, TXF
     """
-    ldcbmr_reader = LDCBMR()
-    total = ldcbmr_reader.read(filepath)
-
-    total = total.set_index(["FECHA", "CODIGO"]).stack().reset_index()
-    total = total.rename(columns={"level_2": "NOMBRE HORA", 0: "VALOR"})
-    total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
-    total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
-    total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
-
-    total = (
-        total.set_index(["FECHA", "NOMBRE HORA", "HORA", "FECHA_HORA", "CODIGO"])
-        .unstack()
-        .reset_index()
-    )
-    cols = [
-        f"{l1}_{l0}" if l1 else l0
-        for (l0, l1) in zip(
-            total.columns.get_level_values(0), total.columns.get_level_values(1)
-        )
-    ]
-    total.columns = cols
-    return_col = ["FECHA_HORA", "CHDC_VALOR", "VHDC_VALOR"]
+    pubfc_reader = PUBFC()
+    total = pubfc_reader.read(filepath)
+    
+    return_col = ["Código SIC", "Fecha de Reporte de la Falla"]
     return total[return_col]
