@@ -8,11 +8,12 @@ from .afac import afac_preprocess
 from .dspcttos import dspcttos_preprocess
 from .ldcbmr import ldcbmr_preprocess
 from .pep import pep_preprocess
+from .pubfc import pubfc_preprocess
+from .pubfc_falla_hurto import pubfc_falla_hurto_preprocess
 from .sntie import sntie_preprocess
 from .tgrl import tgrl_preprocess
 from .trsd import trsd_preprocess
 from .trsm import trsm_preprocess
-from .pubfc import pubfc_preprocess
 
 # from .undefined import undefined_preprocess
 
@@ -29,6 +30,7 @@ class SupportedFiles(str, enum.Enum):
     AFAC = "afac", afac_preprocess
     DSPCTTOS = "dspcttos", dspcttos_preprocess
     PUBFC = "pubfc", pubfc_preprocess
+    PUBFC_FALLA_HURTO = "pubfc_falla_hurto", pubfc_falla_hurto_preprocess
 
     def __new__(cls, code, preprocessor):
         obj = str.__new__(cls, [code])

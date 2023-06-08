@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 pubfc_format = {
     "type": "xlsx",
-    "sheet_name"
-    "encoding": "cp1252",
+    "sheet_name" "encoding": "cp1252",
     "dt_fields": {
         "Fecha de Reporte de la Falla": {"format": "%Y-%m-%d %H:%M:%S"},
         "Fecha Máxima de Normalización": {"format": "%Y-%m-%d %H:%M:%S"},
@@ -37,18 +36,18 @@ pubfc_format = {
 }
 
 
-class PUBFC(FileReader):
+class PubFC(FileReader):
     def __init__(self):
         return super().__init__(pubfc_format.copy())
 
 
 def pubfc_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     """
-    TRSM: se publica un archivo por mes.
-    versiones: TXR, TXF
+    PubFC: se publica un archivo por dia.
+    versiones: No aplica
     """
-    pubfc_reader = PUBFC()
+    pubfc_reader = PubFC()
     total = pubfc_reader.read(filepath)
-    
+
     return_col = ["Código SIC", "Fecha de Reporte de la Falla"]
     return total[return_col]

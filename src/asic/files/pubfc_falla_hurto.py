@@ -11,16 +11,13 @@ from ..metadata import FileItemInfo
 
 logger = logging.getLogger(__name__)
 
-ldcbmr_format = {
-    "type": "csv",
-    "sep": ";",
-    "encoding": "cp1252",
-    "sheet_name": 0,
-    "engine": "openpyxl",
+pubfc_falla_hurto_format = {
+    "type": "xlsx",
+    "sheet_name" "encoding": "cp1252",
     "dt_fields": {
-        "Fecha de Reporte de la Falla": {"format": "%Y-%m-%d"},
-        "Fecha Máxima de Normalización": {"format": "%Y-%m-%d"},
-        "Fecha de Solicitud de Ampliación": {"format": "%Y-%m-%d"},
+        "Fecha de Reporte de la Falla": {"format": "%Y-%m-%d %H:%M:%S"},
+        "Fecha Máxima de Normalización": {"format": "%Y-%m-%d %H:%M:%S"},
+        "Fecha de Solicitud de Ampliación": {"format": "%Y-%m-%d %H:%M:%S"},
     },
     "dtype": {
         "Código SIC": str,
@@ -39,36 +36,20 @@ ldcbmr_format = {
 }
 
 
-class LDCBMR(FileReader):
+class PubFCFallaHurto(FileReader):
     def __init__(self):
-        return super().__init__(ldcbmr_format.copy())
+        return super().__init__(pubfc_falla_hurto_format.copy())
 
 
-def ldcbmr_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
+def pubfc_falla_hurto_preprocess(
+    filepath: pathlib.Path, item: FileItemInfo
+) -> pd.DataFrame:
     """
-    TRSM: se publica un archivo por mes.
-    versiones: TXR, TXF
+    PUBFC: se publica un archivo por dia.
+    versiones: No aplica
     """
-    ldcbmr_reader = LDCBMR()
-    total = ldcbmr_reader.read(filepath)
+    pubfc_reader = PubFCFallaHurto()
+    total = pubfc_reader.read(filepath)
 
-    total = total.set_index(["FECHA", "CODIGO"]).stack().reset_index()
-    total = total.rename(columns={"level_2": "NOMBRE HORA", 0: "VALOR"})
-    total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
-    total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
-    total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
-
-    total = (
-        total.set_index(["FECHA", "NOMBRE HORA", "HORA", "FECHA_HORA", "CODIGO"])
-        .unstack()
-        .reset_index()
-    )
-    cols = [
-        f"{l1}_{l0}" if l1 else l0
-        for (l0, l1) in zip(
-            total.columns.get_level_values(0), total.columns.get_level_values(1)
-        )
-    ]
-    total.columns = cols
-    return_col = ["FECHA_HORA", "CHDC_VALOR", "VHDC_VALOR"]
+    return_col = ["Código SIC", "Fecha de Reporte de la Falla"]
     return total[return_col]
