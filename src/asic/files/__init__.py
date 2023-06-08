@@ -31,6 +31,10 @@ class SupportedFiles(str, enum.Enum):
     DSPCTTOS = "dspcttos", dspcttos_preprocess
     PUBFC = "pubfc", pubfc_preprocess
     PUBFC_FALLA_HURTO = "pubfc_falla_hurto", pubfc_falla_hurto_preprocess
+    FRONTERAS_COMERCIALES = (
+        "fronteras_comerciales",
+        ...,
+    )  # TODO: implement preporocess for this file
 
     def __new__(cls, code, preprocessor):
         obj = str.__new__(cls, [code])
