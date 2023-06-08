@@ -9,15 +9,16 @@ from typing import Optional
 import typer
 from rich.progress import track
 
-from asic import ASIC_FILE_EXTENSION_MAP
+from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
+from asic.config import ASICFileVisibility
 from asic.files import SupportedFiles
-from asic.ftp.ftp import (
+from asic.ftp import (
     grab_file,  # list_supported_files_in_location,
     list_supported_files,
 )
 from asic.publication import list_latest_published_versions
 
-logger = logging.getLogger("eds")
+logger = logging.getLogger("asic")
 logger.addHandler(logging.StreamHandler())
 
 YEAR_MONTH_FORMATS = ["%Y-%m", "%Y%m"]
@@ -26,33 +27,53 @@ SUPPORTED_FILES = sorted([f.value.lower() for f in SupportedFiles])
 SUPPORTED_FILES_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_FILES}"
 SUPPORTED_EXTENSIONS = [e.lower() for e in ASIC_FILE_EXTENSION_MAP.keys()]
 SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_EXTENSIONS}"
-PUBLIC_SEARCHEABLE_LOCATIONS = [
-    r"/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/{year:04d}-{month:02d}/",
-]
-PRIVATE_SEARCHEABLE_LOCATIONS = [
-    r"/UsuariosK/{agent}/Sic/COMERCIA/{year:04d}-{month:02d}/",
-]
+PUBLIC_SEARCHEABLE_LOCATIONS = set(
+    [
+        c.location_pattern.encode("unicode-escape").decode()
+        for f, c in ASIC_FILE_CONFIG.items()
+        if c.visibility == ASICFileVisibility.PUBLIC
+    ]
+)
+PRIVATE_SEARCHEABLE_LOCATIONS = set(
+    [
+        c.location_pattern.encode("unicode-escape").decode()
+        for f, c in ASIC_FILE_CONFIG.items()
+        if c.visibility == ASICFileVisibility.AGENT
+    ]
+)
 
-
-cli = typer.Typer(no_args_is_help=True)
+cli = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 
 
 @cli.callback()
-def main(verbosity: int = typer.Option(0, "--verbosity", "-v", count=True)):
+def main(
+    ctx: typer.Context,
+    verbosity: int = typer.Option(0, "--verbosity", "-v", count=True),
+    ftps_host: str = typer.Option(default="xmftps.xm.com.co", envvar="ASIC_FTPS_HOST"),
+    ftps_port: int = typer.Option(default=210, envvar="ASIC_FTPS_PORT"),
+    ftps_user: str = typer.Option(..., envvar="ASIC_FTPS_USER", prompt=True),
+    ftps_password: str = typer.Option(..., envvar="ASIC_FTPS_PASSWORD", prompt=True),
+):
+    """
+    FTP authentication info should be  provided as environment variables (ASIC_FTP_*)
+    """
     logger.info(f"Verbosity level {verbosity}")
     match verbosity:
         case 0:
-            logger.setLevel(logging.FATAL)
-        case 1:
             logger.setLevel(logging.ERROR)
-        case 2:
+        case 1:
             logger.setLevel(logging.WARNING)
-        case 3:
+        case 2:
             logger.setLevel(logging.INFO)
-        case 4:
+        case 3:
             logger.setLevel(logging.DEBUG)
         case _:
             logger.setLevel(logging.DEBUG)
+
+    ctx.meta["ASIC_FTPS_HOST"] = ftps_host
+    ctx.meta["ASIC_FTPS_PORT"] = ftps_port
+    ctx.meta["ASIC_FTPS_USER"] = ftps_user
+    ctx.meta["ASIC_FTPS_PASSWORD"] = ftps_password
 
 
 def get_ftps(
@@ -153,10 +174,7 @@ def pubs(
 
 @cli.command("list")
 def list_files(
-    ftps_host: str = typer.Option(default="xmftps.xm.com.co", envvar="ASIC_FTPS_HOST"),
-    ftps_user: str = typer.Option(..., envvar="ASIC_FTPS_USER"),
-    ftps_password: str = typer.Option(..., envvar="ASIC_FTPS_PASSWORD"),
-    ftps_port: int = typer.Option(default=210, envvar="ASIC_FTPS_PORT"),
+    ctx: typer.Context,
     months: list[str] = typer.Option(
         ...,
         "--month",
@@ -194,6 +212,11 @@ def list_files(
         f" extensions: {extensions}"
         f" files: {files}"
     )
+    ftps_host = ctx.meta["ASIC_FTPS_HOST"]
+    ftps_port = ctx.meta["ASIC_FTPS_PORT"]
+    ftps_user = ctx.meta["ASIC_FTPS_USER"]
+    ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
+
     if not extensions:
         extensions = [None]
     if not files:
@@ -227,6 +250,7 @@ def list_files(
 
 @cli.command()
 def download(
+    ctx: typer.Context,
     months: list[str] = typer.Option(
         ...,
         "--month",
@@ -246,18 +270,6 @@ def download(
         help=SUPPORTED_EXTENSIONS_ERROR_MESSAGE,
     ),
     destination: pathlib.Path = typer.Argument(...),
-    ftps_host: str = typer.Argument(
-        default="xmftps.xm.com.co", envvar="ASIC_FTPS_HOST"
-    ),
-    ftps_user: str = typer.Argument(..., envvar="ASIC_FTPS_USER"),
-    ftps_password: str = typer.Argument(..., envvar="ASIC_FTPS_PASSWORD"),
-    ftps_port: int = typer.Argument(default=210, envvar="ASIC_FTPS_PORT"),
-    # asic_raw_container_name: str = typer.Argument(
-    #     "asic-raw", envvar="ASIC_RAW_CONTAINER_NAME"
-    # ),
-    # asic_processed_container_name: str = typer.Argument(
-    #     "asic", envvar="ASIC_PROCESSED_CONTAINER_NAME"
-    # ),
 ):
     """
     Download files from asic's ftp server to local DESTINATION folder.
@@ -268,6 +280,11 @@ def download(
         extensions = [None]
     if not files:
         files = SUPPORTED_FILES
+
+    ftps_host = ctx.meta["ASIC_FTPS_HOST"]
+    ftps_port = ctx.meta["ASIC_FTPS_PORT"]
+    ftps_user = ctx.meta["ASIC_FTPS_USER"]
+    ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
 
     locations = PUBLIC_SEARCHEABLE_LOCATIONS
     if agent is not None:

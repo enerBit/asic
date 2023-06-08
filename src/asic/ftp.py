@@ -8,6 +8,7 @@ import re
 from typing import Iterable
 
 import pydantic
+
 from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,33 @@ def list_files_in_location(
 def fiter_files_by_pattern(
     file_list: list[pathlib.PurePath], name_pattern: str
 ) -> list[pathlib.PurePath]:
-    filtered = [f for f in file_list if re.search(name_pattern, str(f.name))]
+    reo = re.compile(name_pattern)
+    filtered = [f for f in file_list if reo.search(str(f.name))]
+    filtered = []
+    for f in file_list:
+        match = reo.search(str(f.name))
+        if match:
+            filtered.append(f)
+    return filtered
+
+
+def fiter_files_by_date_range(
+    file_list: list[pathlib.PurePath], name_pattern: str, since: dt.date, until: dt.date
+) -> list[pathlib.PurePath]:
+    reo = re.compile(name_pattern)
+    today = dt.date.today()
+    filtered: list[pathlib.PurePath] = []
+    for f in file_list:
+        match = reo.search(str(f.name))
+        (f_day, f_month) = match.group("name_day", "name_month")
+        try:
+            f_year = match.group("name_year")
+        except IndexError:
+            f_year = today.year
+        f_date = dt.date(int(f_year), int(f_month), int(f_day))
+        if since <= f_date <= until:
+            filtered.append(f)
+
     return filtered
 
 
@@ -77,7 +104,7 @@ def list_supported_files(
     ):
         try:
             remote_location = l_template.format(
-                year=month.year, month=month.month, agent=agent
+                location_year=month.year, location_month=month.month, agent=agent
             )
         except Exception:
             logger.debug(
@@ -85,9 +112,10 @@ def list_supported_files(
             )
             continue
         logger.debug(f"Listing remote location: {remote_location}")
-        file_list.extend(
-            list_supported_files_in_location(ftp, remote_location, files, ext)
+        files_in_location = list_supported_files_in_location(
+            ftp, remote_location, month, files, ext
         )
+        file_list.extend(files_in_location)
 
     return file_list
 
@@ -95,11 +123,16 @@ def list_supported_files(
 def list_supported_files_in_location(
     ftp: ftplib.FTP,
     location: str,
+    month: dt.date,
     file_codes: list[str],
     extension: str,
 ) -> list[pathlib.PurePath]:
     files = list_files_in_location(ftp, location)
     logger.debug(f"Total files in location {location}")
+    since = month
+    until = (month.replace(day=1) + dt.timedelta(days=31)).replace(
+        day=1
+    ) - dt.timedelta(days=1)
 
     patterns = [c.name_pattern for f, c in ASIC_FILE_CONFIG.items() if f in file_codes]
 
@@ -112,6 +145,12 @@ def list_supported_files_in_location(
     for p in patterns:
         logger.debug(f"Filtering {len(files)} by pattern {p}")
         new_files = fiter_files_by_pattern(files, p)
+        new_files = fiter_files_by_date_range(
+            new_files,
+            p,
+            since,
+            until,
+        )
         logger.debug(f"Kept {len(new_files)} files")
         supported_files_in_location.extend(new_files)
     logger.info(f"Total files kept {len(supported_files_in_location)}")

@@ -1,5 +1,6 @@
 import json as json
 import re
+from enum import Enum
 
 import pkg_resources
 from pydantic import BaseModel, constr
@@ -26,8 +27,14 @@ class ASICExtesionMap(BaseModel):
     order: int
 
 
+class ASICFileVisibility(str, Enum):
+    PUBLIC = "public"
+    AGENT = "agent"
+
+
 class ASICFileConfig(BaseModel):
     code: str
+    visibility: ASICFileVisibility
     name_pattern: str
     location_pattern: str
     description: str | None
