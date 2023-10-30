@@ -11,15 +11,18 @@ from ..metadata import FileItemInfo
 
 logger = logging.getLogger(__name__)
 
-tgrl_format = {
+desbmex_format = {
     "type": "csv",
     "sep": ";",
     "encoding": "cp1252",
     "dt_fields": {},
     "dtype": {
-        "CODIGO": str,
-        "AGENTE": str,
-        "CONTENIDO": str,
+        "FECHA": str,
+        "CONCEPTO": str,
+        "REPRESENTANTE": str,
+        "MERCADO COMERCIALIZACIÓN": str,
+        "SUBMERCADO": str,
+        "TIPO": str,
         "HORA 01": float,
         "HORA 02": float,
         "HORA 03": float,
@@ -48,45 +51,49 @@ tgrl_format = {
 }
 
 
-class TGRL(FileReader):
+class DESBMEX(FileReader):
     def __init__(self):
-        return super().__init__(tgrl_format.copy())
+        return super().__init__(desbmex_format.copy())
 
 
-def tgrl_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
+def desbmex_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     """
-    tgrl: se publica un archivo por día.
-    versiones: TX2, TXR y TXF
-    CODIGO:
-      EBRC: Energía en bolsa regulada a cargo, en kWh.
-      EBOC: Energía en bolsa no regulada a cargo, en kWh.
-    AGENTE:
-      EPSC: Código SIC del agente comercializador
+    DESBMEX: es un archivo diario
+    versiones: TX2, TXR, TXF
+    Contiene la información de alivios y demandas asociados a generación excedentaria por submercado en los diferentes mercados de comercialización en que participa.
     """
-    tgrl_reader = TGRL()
-    total = tgrl_reader.read(filepath)
+    desbmex_reader = DESBMEX()
+    total = desbmex_reader.read(filepath)
     total["FECHA"] = f"{item.year:04d}-{item.month:02d}-{item.day:02d}"
-
-    # total = total[
-    #     (total["CODIGO"].isin(["EBRC", "EBOC"])) & (total["AGENTE"] == item.agent)
-    # ]
-    total = total[
-        (total["AGENTE"] == item.agent)
-    ]
-
     total["FECHA"] = pd.to_datetime(
         total["FECHA"],
         format="%Y-%m-%d",
     )
     total = (
-        total.set_index(["CODIGO", "AGENTE", "CONTENIDO", "FECHA"])
+        total.set_index(
+            [
+                "FECHA",
+                "CONCEPTO",
+                "REPRESENTANTE",
+                "MERCADO COMERCIALIZACIÓN",
+                "SUBMERCADO",
+                "TIPO",
+            ]
+        )
         .stack()
         .reset_index()
     )
-    total = total.rename(columns={"level_4": "NOMBRE HORA", 0: "VALOR"})
+    total = total.rename(columns={"level_6": "NOMBRE HORA", 0: "VALOR"})
     total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
     total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
     total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
-    total["HORA"] = total["FECHA_HORA"].dt.strftime("%H:%M:%S")
-    ret_cols = ["FECHA_HORA", "CODIGO", "AGENTE", "CONTENIDO", "VALOR"]
-    return total[ret_cols]
+    return_cols = [
+        "FECHA_HORA",
+        "CONCEPTO",
+        "REPRESENTANTE",
+        "MERCADO COMERCIALIZACIÓN",
+        "SUBMERCADO",
+        "TIPO",
+        "VALOR",
+    ]
+    return total[return_cols]

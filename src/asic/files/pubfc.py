@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 pubfc_format = {
     "type": "xlsx",
-    "sheet_name": "ProcesoReg{fecha}",  # TODO: resolver como sacar la hoja porque depende de la fecha
-    "encoding": "cp1252",
+    "sheet_name" "encoding": "cp1252",
     "dt_fields": {
         "Fecha de Reporte de la Falla": {"format": "%Y-%m-%d %H:%M:%S"},
         "Fecha Máxima de Normalización": {"format": "%Y-%m-%d %H:%M:%S"},

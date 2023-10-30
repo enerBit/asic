@@ -11,15 +11,15 @@ from ..metadata import FileItemInfo
 
 logger = logging.getLogger(__name__)
 
-tgrl_format = {
+desbm_format = {
     "type": "csv",
     "sep": ";",
     "encoding": "cp1252",
     "dt_fields": {},
     "dtype": {
-        "CODIGO": str,
-        "AGENTE": str,
-        "CONTENIDO": str,
+        "FECHA": str,
+        "SUBMERCADO": str,
+        "NOMBRE": str,
         "HORA 01": float,
         "HORA 02": float,
         "HORA 03": float,
@@ -44,42 +44,39 @@ tgrl_format = {
         "HORA 22": float,
         "HORA 23": float,
         "HORA 24": float,
+        "CONCEPTO": str,
     },
 }
 
 
-class TGRL(FileReader):
+class DESBM(FileReader):
     def __init__(self):
-        return super().__init__(tgrl_format.copy())
+        return super().__init__(desbm_format.copy())
 
 
-def tgrl_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
+def desbm_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     """
-    tgrl: se publica un archivo por día.
-    versiones: TX2, TXR y TXF
-    CODIGO:
-      EBRC: Energía en bolsa regulada a cargo, en kWh.
-      EBOC: Energía en bolsa no regulada a cargo, en kWh.
-    AGENTE:
-      EPSC: Código SIC del agente comercializador
+    DESBM: es un archivo diario
+    versiones: TX2, TXR, TXF
+    Contiene la información de Pérdidas asociadas a la generación excedentaria. 
+    Para comercializador: demanda que se reduce por generación excedentaria. Para el generador: Participación en la demanda por generación excedentaria.
     """
-    tgrl_reader = TGRL()
-    total = tgrl_reader.read(filepath)
+    desbm_reader = DESBM()
+    total = desbm_reader.read(filepath)
     total["FECHA"] = f"{item.year:04d}-{item.month:02d}-{item.day:02d}"
-
-    # total = total[
-    #     (total["CODIGO"].isin(["EBRC", "EBOC"])) & (total["AGENTE"] == item.agent)
-    # ]
-    total = total[
-        (total["AGENTE"] == item.agent)
-    ]
-
     total["FECHA"] = pd.to_datetime(
         total["FECHA"],
         format="%Y-%m-%d",
     )
     total = (
-        total.set_index(["CODIGO", "AGENTE", "CONTENIDO", "FECHA"])
+        total.set_index(
+            [
+                "FECHA",
+                "SUBMERCADO",
+                "NOMBRE",
+                "CONCEPTO",
+            ]
+        )
         .stack()
         .reset_index()
     )
@@ -87,6 +84,11 @@ def tgrl_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
     total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
     total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
-    total["HORA"] = total["FECHA_HORA"].dt.strftime("%H:%M:%S")
-    ret_cols = ["FECHA_HORA", "CODIGO", "AGENTE", "CONTENIDO", "VALOR"]
-    return total[ret_cols]
+    return_cols = [
+        "FECHA_HORA",
+        "SUBMERCADO",
+        "NOMBRE",
+        "CONCEPTO",
+        "VALOR",
+    ]
+    return total[return_cols]

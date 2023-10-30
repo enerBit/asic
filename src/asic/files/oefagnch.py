@@ -1,6 +1,8 @@
 import logging
 import pathlib
 
+import numpy as np
+
 # Third party imports
 import pandas as pd
 
@@ -11,15 +13,14 @@ from ..metadata import FileItemInfo
 
 logger = logging.getLogger(__name__)
 
-tgrl_format = {
+oefagnch_format = {
     "type": "csv",
     "sep": ";",
     "encoding": "cp1252",
     "dt_fields": {},
     "dtype": {
-        "CODIGO": str,
-        "AGENTE": str,
-        "CONTENIDO": str,
+        "CONCEPTO": str,
+        "DESCRIPCION": str,
         "HORA 01": float,
         "HORA 02": float,
         "HORA 03": float,
@@ -48,45 +49,37 @@ tgrl_format = {
 }
 
 
-class TGRL(FileReader):
+class OEFAGNCH(FileReader):
     def __init__(self):
-        return super().__init__(tgrl_format.copy())
+        return super().__init__(oefagnch_format.copy())
 
 
-def tgrl_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
+def oefagnch_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     """
-    tgrl: se publica un archivo por día.
-    versiones: TX2, TXR y TXF
-    CODIGO:
-      EBRC: Energía en bolsa regulada a cargo, en kWh.
-      EBOC: Energía en bolsa no regulada a cargo, en kWh.
-    AGENTE:
-      EPSC: Código SIC del agente comercializador
+    OEFAGNCH: es un archivo diario
+    versiones: TX2, TXR, TXF
+    Información necesaria para el cálculo de las desviaciones positivas horarias de las Obligaciones de Energía Firme 
+    para cada uno de los agentes generadores que tiene una desviación diaria positiva. 
+    Este archivo sólo se publica cuando el precio de bolsa supera el precio de escasez, para Comercializadores
     """
-    tgrl_reader = TGRL()
-    total = tgrl_reader.read(filepath)
+    oefagnch_reader = OEFAGNCH()
+    total = oefagnch_reader.read(filepath)
     total["FECHA"] = f"{item.year:04d}-{item.month:02d}-{item.day:02d}"
 
-    # total = total[
-    #     (total["CODIGO"].isin(["EBRC", "EBOC"])) & (total["AGENTE"] == item.agent)
-    # ]
-    total = total[
-        (total["AGENTE"] == item.agent)
-    ]
-
+    filter = np.full(total.index.shape, True)
+    total = total[filter]
     total["FECHA"] = pd.to_datetime(
         total["FECHA"],
         format="%Y-%m-%d",
     )
     total = (
-        total.set_index(["CODIGO", "AGENTE", "CONTENIDO", "FECHA"])
+        total.set_index(["FECHA", "CONCEPTO", "DESCRIPCION"])
         .stack()
         .reset_index()
     )
-    total = total.rename(columns={"level_4": "NOMBRE HORA", 0: "VALOR"})
+    total = total.rename(columns={"level_3": "NOMBRE HORA", 0: "VALOR"})
     total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
     total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
     total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
-    total["HORA"] = total["FECHA_HORA"].dt.strftime("%H:%M:%S")
-    ret_cols = ["FECHA_HORA", "CODIGO", "AGENTE", "CONTENIDO", "VALOR"]
-    return total[ret_cols]
+    return_cols = ["FECHA_HORA", "CONCEPTO", "DESCRIPCION", "VALOR"]
+    return total[return_cols]

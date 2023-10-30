@@ -22,6 +22,7 @@ dspcttos_format = {
         "COMPRADOR": str,
         "TIPO": str,
         "TIPOMERC": str,
+        "TIPO ASIGNA": str,
         "DESP_HORA 01": float,
         "DESP_HORA 02": float,
         "DESP_HORA 03": float,
@@ -84,15 +85,16 @@ def dspcttos_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFr
     DSPCTTOS: se publica un archivo por dia.
     versiones: TX2, TXR, TXF
     COMPRADOR:
-        EPSC: aqui despues va enerbit
+        EPSC: aqui va el código ASIC del comercializador/gneerador
     TIPOMERC:
         R: Regulada
+        N: No Regulados
     """
     dspcttos_reader = DSPCTTOS()
     total = dspcttos_reader.read(filepath)
     total["FECHA"] = f"{item.year:04d}-{item.month:02d}-{item.day:02d}"
 
-    total = total[(total["COMPRADOR"] == item.agent) & (total["TIPOMERC"] == "R")]
+    # total = total[(total["COMPRADOR"] == item.agent) & (total["TIPOMERC"] == "R")]
 
     total["FECHA"] = pd.to_datetime(
         total["FECHA"],
@@ -100,13 +102,13 @@ def dspcttos_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFr
     )
     total = (
         total.set_index(
-            ["FECHA", "CONTRATO", "VENDEDOR", "COMPRADOR", "TIPO", "TIPOMERC"]
+            ["FECHA", "CONTRATO", "VENDEDOR", "COMPRADOR", "TIPO", "TIPOMERC", "TIPO ASIGNA"]
         )
         .stack()
         .reset_index()
     )
 
-    total = total.rename(columns={"level_6": "NOMBRE HORA", 0: "VALOR"})
+    total = total.rename(columns={"level_7": "NOMBRE HORA", 0: "VALOR"})
     total["CONCEPTO"] = total["NOMBRE HORA"].apply(lambda x: x.split("_")[0])
     total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
     total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
@@ -123,6 +125,7 @@ def dspcttos_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFr
                 "COMPRADOR",
                 "TIPO",
                 "TIPOMERC",
+                "TIPO ASIGNA",
                 "CONCEPTO",
                 "VALOR",
             ]
@@ -137,6 +140,7 @@ def dspcttos_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFr
                 "COMPRADOR",
                 "TIPO",
                 "TIPOMERC",
+                "TIPO ASIGNA",
                 "CONCEPTO",
             ]
         )
@@ -158,6 +162,7 @@ def dspcttos_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFr
         "COMPRADOR",
         "TIPO",
         "TIPOMERC",
+        "TIPO ASIGNA",
         "DESP_VALOR",
         "TRF_VALOR",
     ]
