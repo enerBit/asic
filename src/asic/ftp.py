@@ -26,7 +26,10 @@ class DownloadSpec(pydantic.BaseModel):
 
 def grab_file(ftp: ftplib.FTP, remote: pathlib.PurePath, local: pathlib.Path):
     with open(local, "wb") as dst:
-        ftp.retrbinary("RETR " + str(remote), dst.write)
+        try:
+            ftp.retrbinary("RETR " + str(remote), dst.write)
+        except:
+            logger.exception(f"Failed to download file '{str(remote)}'")
 
 
 def grab_files(ftp: ftplib.FTP, files: Iterable[DownloadSpec]) -> None:
