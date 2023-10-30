@@ -14,6 +14,12 @@ from .sntie import sntie_preprocess
 from .tgrl import tgrl_preprocess
 from .trsd import trsd_preprocess
 from .trsm import trsm_preprocess
+from .tfroc import tfroc_preprocess
+from .cliq import cliq_preprocess
+from .balcttos import balcttos_preprocess
+from .desbm import desbm_preprocess
+from .desbmex import desbmex_preprocess
+from .oefagnch import oefagnch_preprocess
 
 # from .undefined import undefined_preprocess
 
@@ -31,10 +37,12 @@ class SupportedFiles(str, enum.Enum):
     DSPCTTOS = "dspcttos", dspcttos_preprocess
     PUBFC = "pubfc", pubfc_preprocess
     PUBFC_FALLA_HURTO = "pubfc_falla_hurto", pubfc_falla_hurto_preprocess
-    FRONTERAS_COMERCIALES = (
-        "fronteras_comerciales",
-        ...,
-    )  # TODO: implement preporocess for this file
+    TFROC = "tfroc", tfroc_preprocess
+    CLIQ = "cliq", cliq_preprocess
+    BALCTTOS = "balcttos", balcttos_preprocess
+    DESBM = "desbm", desbm_preprocess
+    DESBMEX = "desbmex", desbmex_preprocess
+    OEFAGNCH = "oefagnch", oefagnch_preprocess
 
     def __new__(cls, code, preprocessor):
         obj = str.__new__(cls, [code])

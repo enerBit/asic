@@ -60,7 +60,7 @@ def adem_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     ADEM: es un archivo diario
     versiones: TX2, TXR, TXF
     AGENTE
-    EPSC: aqui va enerbit
+    EPSC: Código SIC del agente comercializador
     CODIGO:
     DMRE: demanda regulada
     PRRE: perdidas reguladas

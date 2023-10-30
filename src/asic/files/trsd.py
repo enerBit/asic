@@ -62,7 +62,7 @@ def trsd_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
     trsd_reader = TRSD()
     total = trsd_reader.read(filepath)
     total["FECHA"] = f"{item.year:04d}-{item.month:02d}-{item.day:02d}"
-    total = total[total["CODIGO"] == "PBNA"]
+    # total = total[total["CODIGO"] == "PBNA"]
     total["FECHA"] = pd.to_datetime(
         total["FECHA"],
         format="%Y-%m-%d",
