@@ -17,7 +17,7 @@ SUPPORTED_ASIC_EXTENSIONS = frozenset(
 
 class ASICVersionPublication(pydantic.BaseModel):
     month: dt.datetime
-    version: pydantic.constr(regex=r"^[a-z0-9]*$")  # type: ignore # noqa: F722
+    version: pydantic.constr(pattern=r"^[a-z0-9]*$")  # type: ignore # noqa: F722
     published_at: dt.datetime
 
 

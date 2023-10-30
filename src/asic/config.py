@@ -22,8 +22,8 @@ LOCATION_REGEX = re.compile(
 
 
 class ASICExtesionMap(BaseModel):
-    asic_extension: constr(regex=r"^\.[a-zA-Z0-9]*$")  # type: ignore # noqa: F722
-    normalized_version: constr(regex=r"^[0-9]{3}$")  # type: ignore # noqa: F722
+    asic_extension: constr(pattern=r"^\.[a-zA-Z0-9]*$")  # type: ignore # noqa: F722
+    normalized_version: constr(pattern=r"^[0-9]{3}$")  # type: ignore # noqa: F722
     order: int
 
 
@@ -50,7 +50,7 @@ def load_asic_file_extension_map() -> dict[str, ASICExtesionMap]:
         lines.append(json.loads(line))
 
     asic_file_extension_mapper = {
-        line["asic_extension"]: ASICExtesionMap.parse_obj(line) for line in lines
+        line["asic_extension"]: ASICExtesionMap.model_validate(line) for line in lines
     }
     return asic_file_extension_mapper
 
@@ -64,5 +64,5 @@ def load_asic_file_config() -> dict[str, ASICFileConfig]:
     for line in stream:
         lines.append(json.loads(line))
 
-    asic_file_config = {line["code"]: ASICFileConfig.parse_obj(line) for line in lines}
+    asic_file_config = {line["code"]: ASICFileConfig.model_validate(line) for line in lines}
     return asic_file_config
