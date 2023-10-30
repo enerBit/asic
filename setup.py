@@ -147,7 +147,7 @@ setup(
         "BeautifulSoup4",
         "pytz",
         "pandas",
-        "pydantic",
+        "pydantic<2.0",
         "typer[all]",
     ],  # Optional
     # List additional groups of dependencies here (e.g. development

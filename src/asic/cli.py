@@ -224,7 +224,7 @@ def list_files(
 
     locations = PUBLIC_SEARCHEABLE_LOCATIONS
     if agent is not None:
-        locations.union(PRIVATE_SEARCHEABLE_LOCATIONS)
+        locations = locations.union(PRIVATE_SEARCHEABLE_LOCATIONS)
 
     ftps = get_ftps(
         ftps_host=ftps_host,
@@ -288,7 +288,7 @@ def download(
 
     locations = PUBLIC_SEARCHEABLE_LOCATIONS
     if agent is not None:
-        locations.union(PRIVATE_SEARCHEABLE_LOCATIONS)
+        locations = locations.union(PRIVATE_SEARCHEABLE_LOCATIONS)
 
     ftps = get_ftps(
         ftps_host=ftps_host,
