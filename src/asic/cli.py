@@ -5,6 +5,7 @@ import os
 import pathlib
 from ssl import SSLZeroReturnError
 from typing import Optional
+import pydantic
 
 import typer
 from rich.progress import track
@@ -29,14 +30,14 @@ SUPPORTED_EXTENSIONS = [e.lower() for e in ASIC_FILE_EXTENSION_MAP.keys()]
 SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_EXTENSIONS}"
 PUBLIC_SEARCHEABLE_LOCATIONS = set(
     [
-        c.location_pattern.encode("unicode-escape").decode()
+        c.location_pattern.encode("unicode-escape").decode().lower()
         for f, c in ASIC_FILE_CONFIG.items()
         if c.visibility == ASICFileVisibility.PUBLIC
     ]
 )
 PRIVATE_SEARCHEABLE_LOCATIONS = set(
     [
-        c.location_pattern.encode("unicode-escape").decode()
+        c.location_pattern.encode("unicode-escape").decode().lower()
         for f, c in ASIC_FILE_CONFIG.items()
         if c.visibility == ASICFileVisibility.AGENT
     ]
@@ -73,7 +74,7 @@ def main(
     ctx.meta["ASIC_FTPS_HOST"] = ftps_host
     ctx.meta["ASIC_FTPS_PORT"] = ftps_port
     ctx.meta["ASIC_FTPS_USER"] = ftps_user
-    ctx.meta["ASIC_FTPS_PASSWORD"] = ftps_password
+    ctx.meta["ASIC_FTPS_PASSWORD"] = pydantic.SecretStr(ftps_password)
 
 
 def get_ftps(
@@ -92,7 +93,7 @@ def get_ftps(
         port=ftps_port,
     )
 
-    ftps.login(user=ftps_user, passwd=ftps_password)
+    ftps.login(user=ftps_user, passwd=ftps_password.get_secret_value())
 
     ftps.prot_p()
 
