@@ -5,8 +5,8 @@ import os
 import pathlib
 from ssl import SSLZeroReturnError
 from typing import Optional
-import pydantic
 
+import pydantic
 import typer
 from rich.progress import track
 
@@ -92,7 +92,7 @@ def get_ftps(
     ftps.connect(
         port=ftps_port,
     )
-
+    logger.info(f"Login to FTP '{ftps_host}' as '{ftps_user}'")
     ftps.login(user=ftps_user, passwd=ftps_password.get_secret_value())
 
     ftps.prot_p()
