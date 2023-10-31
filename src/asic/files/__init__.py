@@ -5,21 +5,22 @@ from ..metadata import FileItemInfo
 from .adem import adem_preprocess
 from .aenc import aenc_preprocess
 from .afac import afac_preprocess
+from .balcttos import balcttos_preprocess
+from .cliq import cliq_preprocess
+from .desbm import desbm_preprocess
+from .desbmex import desbmex_preprocess
 from .dspcttos import dspcttos_preprocess
+from .fronteras import fronteras_preprocess
 from .ldcbmr import ldcbmr_preprocess
+from .oefagnch import oefagnch_preprocess
 from .pep import pep_preprocess
 from .pubfc import pubfc_preprocess
 from .pubfc_falla_hurto import pubfc_falla_hurto_preprocess
 from .sntie import sntie_preprocess
+from .tfroc import tfroc_preprocess
 from .tgrl import tgrl_preprocess
 from .trsd import trsd_preprocess
 from .trsm import trsm_preprocess
-from .tfroc import tfroc_preprocess
-from .cliq import cliq_preprocess
-from .balcttos import balcttos_preprocess
-from .desbm import desbm_preprocess
-from .desbmex import desbmex_preprocess
-from .oefagnch import oefagnch_preprocess
 
 # from .undefined import undefined_preprocess
 
@@ -43,6 +44,7 @@ class SupportedFiles(str, enum.Enum):
     DESBM = "desbm", desbm_preprocess
     DESBMEX = "desbmex", desbmex_preprocess
     OEFAGNCH = "oefagnch", oefagnch_preprocess
+    FRONTERAS = "fronteras", fronteras_preprocess
 
     def __new__(cls, code, preprocessor):
         obj = str.__new__(cls, [code])
