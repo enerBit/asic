@@ -24,6 +24,29 @@ class DownloadSpec(pydantic.BaseModel):
         arbitrary_types_allowed = True
 
 
+def get_ftps(
+    ftps_host: str,
+    ftps_user: str,
+    ftps_password: str,
+    ftps_port: int,
+):
+    ftps = ftplib.FTP_TLS(
+        host=ftps_host,
+        encoding="Latin-1",
+        # timeout=10,
+    )
+
+    ftps.connect(
+        port=ftps_port,
+    )
+    logger.info(f"Login to FTP '{ftps_host}' as '{ftps_user}'")
+    ftps.login(user=ftps_user, passwd=ftps_password.get_secret_value())
+
+    ftps.prot_p()
+
+    return ftps
+
+
 def grab_file(ftp: ftplib.FTP, remote: pathlib.PurePath, local: pathlib.Path):
     with open(local, "wb") as dst:
         try:
