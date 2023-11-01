@@ -1,5 +1,4 @@
 import datetime as dt
-import ftplib
 import logging
 import os
 import pathlib
@@ -14,6 +13,7 @@ from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 from asic.config import ASICFileVisibility
 from asic.files import SupportedFiles
 from asic.ftp import (
+    get_ftps,
     grab_file,  # list_supported_files_in_location,
     list_supported_files,
 )
@@ -75,29 +75,6 @@ def main(
     ctx.meta["ASIC_FTPS_PORT"] = ftps_port
     ctx.meta["ASIC_FTPS_USER"] = ftps_user
     ctx.meta["ASIC_FTPS_PASSWORD"] = pydantic.SecretStr(ftps_password)
-
-
-def get_ftps(
-    ftps_host: str,
-    ftps_user: str,
-    ftps_password: str,
-    ftps_port: int,
-):
-    ftps = ftplib.FTP_TLS(
-        host=ftps_host,
-        encoding="Latin-1",
-        # timeout=10,
-    )
-
-    ftps.connect(
-        port=ftps_port,
-    )
-    logger.info(f"Login to FTP '{ftps_host}' as '{ftps_user}'")
-    ftps.login(user=ftps_user, passwd=ftps_password.get_secret_value())
-
-    ftps.prot_p()
-
-    return ftps
 
 
 def parse_month(month: str) -> dt.date:
