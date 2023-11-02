@@ -2,7 +2,6 @@ import datetime as dt
 import logging
 import os
 import pathlib
-import ssl
 from typing import Optional
 
 import pydantic
@@ -30,14 +29,14 @@ SUPPORTED_EXTENSIONS = [e.lower() for e in ASIC_FILE_EXTENSION_MAP.keys()]
 SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_EXTENSIONS}"
 PUBLIC_SEARCHEABLE_LOCATIONS = set(
     [
-        c.location_pattern.encode("unicode-escape").decode().lower()
+        c.location_template.encode("unicode-escape").decode().lower()
         for f, c in ASIC_FILE_CONFIG.items()
         if c.visibility == ASICFileVisibility.PUBLIC
     ]
 )
 PRIVATE_SEARCHEABLE_LOCATIONS = set(
     [
-        c.location_pattern.encode("unicode-escape").decode().lower()
+        c.location_template.encode("unicode-escape").decode().lower()
         for f, c in ASIC_FILE_CONFIG.items()
         if c.visibility == ASICFileVisibility.AGENT
     ]
@@ -300,15 +299,17 @@ def download(
     logger.info(f"Total files to download: {len(file_list)}")
 
     for f in track(file_list, description="Dowloading files..."):
+        logger.info(f"File: {f.path}")
         remote = f
-        local = destination / str(f)[1:]  # hack to remove root anchor
+        local = destination / str(f.path)[1:]  # hack to remove root anchor
         os.makedirs(local.parent, exist_ok=True)
         logger.debug(f"Downloading {remote} to {local}")
 
         try:
-            grab_file(ftps, remote, local)
+            grab_file(ftps, remote.path, local)
 
-        except (ssl.SSLZeroReturnError, ssl.SSLEOFError):
+        # except (ssl.SSLZeroReturnError, ssl.SSLEOFError):
+        except Exception:
             logger.warning("Download failed, retrying connection")
             ftps = get_ftps(
                 ftps_host=ftps_host,
@@ -317,7 +318,7 @@ def download(
                 ftps_port=ftps_port,
             )
 
-            grab_file(ftps, remote, local)
+            grab_file(ftps, remote.path, local)
 
     ftps.quit()
 

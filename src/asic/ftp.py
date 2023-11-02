@@ -9,7 +9,7 @@ from typing import Iterable
 
 import pydantic
 
-from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
+from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP, metadata
 
 logger = logging.getLogger(__name__)
 
@@ -82,35 +82,31 @@ def list_files_in_location(
 
 def fiter_files_by_pattern(
     file_list: list[pathlib.PurePath], name_pattern: str
-) -> list[pathlib.PurePath]:
+) -> list[metadata.FileItemInfo]:
     reo = re.compile(name_pattern)
-    filtered = [f for f in file_list if reo.search(str(f.name))]
+    # filtered = [f for f in file_list if reo.search(str(f.name))]
     filtered = []
     for f in file_list:
         match = reo.search(str(f.name))
         if match:
-            filtered.append(f)
+            try:
+                f_metadata = metadata.extract_metadata_from_remote_path(f)
+            except ValueError:
+                logger.warning(f"Failed to extract metadata from {f}")
+                continue
+            filtered.append(f_metadata)
     return filtered
 
 
 def fiter_files_by_date_range(
-    file_list: list[pathlib.PurePath], name_pattern: str, since: dt.date, until: dt.date
-) -> list[pathlib.PurePath]:
-    reo = re.compile(name_pattern)
-    today = dt.date.today()
-    filtered: list[pathlib.PurePath] = []
+    file_list: list[metadata.FileItemInfo],
+    since: dt.date,
+    until: dt.date,
+) -> list[metadata.FileItemInfo]:
+    filtered: list[metadata.FileItemInfo] = []
     for f in file_list:
-        match = reo.search(str(f.name))
-        if match is not None:
-            (f_day, f_month) = match.group("name_day", "name_month")
-        else:
-            logger.warning(f"Failed to extract month or day from {f.name}")
-            continue
-        try:
-            f_year = match.group("name_year")
-        except IndexError:
-            f_year = today.year
-        f_date = dt.date(int(f_year), int(f_month), int(f_day))
+        f_day = f.day if f.day is not None else 1
+        f_date = dt.date(f.year, f.month, f_day)
         if since <= f_date <= until:
             filtered.append(f)
 
@@ -125,7 +121,8 @@ def list_supported_files(
     extensions: list[str],
     files: list[str],
     locations: list[str],
-) -> list[pathlib.PurePath]:
+) -> list[metadata.FileItemInfo]:
+    logger.info("Listing files")
     file_list = []
     for month, l_template, ext in itertools.product(
         months,
@@ -137,7 +134,7 @@ def list_supported_files(
                 location_year=month.year, location_month=month.month, agent=agent
             )
         except Exception:
-            logger.debug(
+            logger.warning(
                 f"Failed to build remote location with {l_template}, {month, agent}"
             )
             continue
@@ -156,7 +153,7 @@ def list_supported_files_in_location(
     month: dt.date,
     file_codes: list[str],
     extension: str,
-) -> list[pathlib.PurePath]:
+) -> list[metadata.FileItemInfo]:
     files = list_files_in_location(ftp, location)
     logger.debug(f"Total files in location {location}")
     since = month
@@ -177,7 +174,6 @@ def list_supported_files_in_location(
         new_files = fiter_files_by_pattern(files, p)
         new_files = fiter_files_by_date_range(
             new_files,
-            p,
             since,
             until,
         )

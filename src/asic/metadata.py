@@ -21,13 +21,14 @@ class FileItemInfo(pydantic.BaseModel):
     version: str | None
     agent: str | None
 
-    class Config:
-        arbitrary_types_allowed = True
+    # class Config:
+    #     arbitrary_types_allowed = True
 
 
 def extract_metadata_from_remote_path(
     file_path: pathlib.PurePath, as_: str | None = None
 ) -> FileItemInfo:
+    file_path_as_posix = str(file_path.as_posix())
     if as_ is None:
         logger.debug(
             "Trying file patterns to discover file code,"
@@ -35,8 +36,8 @@ def extract_metadata_from_remote_path(
         )
         for c, config in ASIC_FILE_CONFIG.items():
             name_pattern = config.name_pattern
-            logger.debug(f"Trying file pattern {name_pattern:r} of code {c}")
-            if re.match(name_pattern, str(file_path)):
+            logger.debug(f"Trying file pattern {name_pattern} of code {c}")
+            if re.match(name_pattern, str(file_path.name), flags=re.IGNORECASE):
                 as_ = c
                 break
         else:
@@ -48,31 +49,48 @@ def extract_metadata_from_remote_path(
     except KeyError:
         raise ValueError(f"Unsupported file code '{as_}'")
 
-    path_pattern = LOCATION_REGEX.pattern + file_config.name_pattern
-    match = re.match(path_pattern, str(file_path))
+    path_pattern = file_config.location_pattern + file_config.name_pattern
+    match = re.match(path_pattern, str(file_path_as_posix), flags=re.IGNORECASE)
     if match is None:
         raise ValueError(
-            f"failed to extract metadata from file path {file_path} using pattern {path_pattern}"
+            f"failed to extract metadata from file path {str(file_path_as_posix)} using pattern {path_pattern}"
         )
     match_groups = match.groupdict()
 
-    year = int(match_groups.get("location_year", match_groups["name_year"]))
-    month = int(match_groups.get("location_month", match_groups["name_month"]))
-    day = int(match_groups.get("location_day", match_groups.get("name_day", None)))
-    extension = match_groups["ext"]
-    code = match_groups["code"]
-    if extension in ASIC_FILE_EXTENSION_MAP:
-        version = ASIC_FILE_EXTENSION_MAP[extension].normalized_version
-    else:
+    year = match_groups.get("location_year", None)
+    if year is None:
+        year = match_groups["name_year"]
+    month = match_groups.get("location_month", None)
+    if month is None:
+        month = match_groups["name_month"]
+    day = match_groups.get("location_day", None)
+    if day is None:
+        day = match_groups.get("name_day", None)
+    day = int(day) if day is not None else None
+    if "ext_versioned" in match_groups:
+        extension = f".{match_groups['ext_versioned'].lower()}"
+        if extension in ASIC_FILE_EXTENSION_MAP:
+            version = ASIC_FILE_EXTENSION_MAP[extension].normalized_version
+        else:
+            raise ValueError(f"Unsupported extension '{extension}'")
+
+    elif "ext_excel" in match_groups:
+        extension = f".{match_groups['ext_excel'].lower()}"
         version = None
+    else:
+        extension = None
+        version = None
+    code = match_groups["code"].lower()
     if file_config.visibility == ASICFileVisibility.AGENT:
-        agent = match_groups["agent"]
+        agent = match_groups.get("location_agent", None)
+        if agent is None:
+            agent = match_groups["name_agent"]
     else:
         agent = None
     return FileItemInfo(
         path=file_path,
-        year=year,
-        month=month,
+        year=int(year),
+        month=int(month),
         day=day,
         extension=extension,
         code=code,
@@ -115,9 +133,16 @@ def extract_metadata_from_local_path(
             )
     match_groups = match.groupdict()
 
-    year = int(match_groups.get("location_year", match_groups["name_year"]))
-    month = int(match_groups.get("location_month", match_groups["name_month"]))
-    day = int(match_groups.get("location_day", match_groups.get("name_day", None)))
+    year = match_groups.get("location_year", None)
+    if year is None:
+        year = match_groups["name_year"]
+    month = match_groups.get("location_month", None)
+    if month is None:
+        month = match_groups["name_month"]
+    day = match_groups.get("location_day", None)
+    if day is None:
+        day = match_groups.get("name_day", None)
+    day = int(day) if day is not None else None
     extension = match_groups["ext"]
     code = match_groups["code"]
     if extension in ASIC_FILE_EXTENSION_MAP:

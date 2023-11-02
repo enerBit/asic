@@ -1,9 +1,10 @@
 import json as json
 import re
 from enum import Enum
+from typing import Annotated
 
 import pkg_resources
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, StringConstraints
 
 LOCATION_TEMPLATE = "{remote_parent}/{normalized_version}/{remote_name}"
 
@@ -22,8 +23,8 @@ LOCATION_REGEX = re.compile(
 
 
 class ASICExtesionMap(BaseModel):
-    asic_extension: constr(pattern=r"^\.[a-zA-Z0-9]*$")  # type: ignore # noqa: F722
-    normalized_version: constr(pattern=r"^[0-9]{3}$")  # type: ignore # noqa: F722
+    asic_extension: Annotated[str, StringConstraints(pattern=r"^\.[a-zA-Z0-9]*$")]
+    normalized_version: Annotated[str, StringConstraints(pattern=r"^[0-9]{3}$")]
     order: int
 
 
@@ -32,12 +33,35 @@ class ASICFileVisibility(str, Enum):
     AGENT = "agent"
 
 
-class ASICFileConfig(BaseModel):
+class ASICFileConfigDefinition(BaseModel):
     code: str
     visibility: ASICFileVisibility
+    name_template: str
+    location_template: str
+    description: str | None
+
+
+class ASICFileConfig(ASICFileConfigDefinition):
     name_pattern: str
     location_pattern: str
-    description: str | None
+
+
+TEMPLATE_PATTERN_MAPPING: dict[str, tuple[str, str]] = {
+    "code": ("{code}", "(?P<code>{code})"),
+    "name_year": ("{name_year:04}", "(?P<name_year>[0-9]{4})"),
+    "name_month": ("{name_month:02}", "(?P<name_month>[0-9]{2})"),
+    "name_day": ("{name_day:02}", "(?P<name_day>[0-9]{2})"),
+    "ext_versioned": (
+        "{ext_versioned}",
+        "(?P<ext_versioned>[tT]{1}[xX]{1}[a-zA-Z0-9]+)",
+    ),
+    "ext_excel": ("{ext_excel}", "(?P<ext_excel>xlsx)"),
+    "name_agent": ("{agent}", "(?P<name_agent>[a-zA-Z]{4})"),
+    "location_agent": ("{agent}", "(?P<location_agent>[a-zA-Z]{4})"),
+    "location_month": ("{location_month:02}", "(?P<location_month>[0-9]{2})"),
+    "location_day": ("{location_day:02}", "(?P<location_day>[0-9]{2})"),
+    "location_year": ("{location_year:04}", "(?P<location_year>[0-9]{4})"),
+}
 
 
 def load_asic_file_extension_map() -> dict[str, ASICExtesionMap]:
@@ -64,5 +88,21 @@ def load_asic_file_config() -> dict[str, ASICFileConfig]:
     for line in stream:
         lines.append(json.loads(line))
 
-    asic_file_config = {line["code"]: ASICFileConfig.model_validate(line) for line in lines}
+    asic_file_config = {
+        line["code"]: ASICFileConfigDefinition.model_validate(line) for line in lines
+    }
+    mappping = {c: t[1] for c, t in TEMPLATE_PATTERN_MAPPING.items()}
+    code_template = "{code}"
+    for c, fcd in asic_file_config.items():
+        name_pattern = fcd.name_template
+        location_pattern = fcd.location_template
+        if code_template in name_pattern or code_template in location_pattern:
+            code_mapping_fix = {"code": "(?P<code>{code})".format(code=fcd.code)}
+
+        name_pattern = name_pattern.format(**(mappping | code_mapping_fix))
+        location_pattern = location_pattern.format(**(mappping | code_mapping_fix))
+        asic_file_config[c] = ASICFileConfig.model_validate(
+            fcd.model_dump()
+            | {"name_pattern": name_pattern, "location_pattern": location_pattern}
+        )
     return asic_file_config
