@@ -33,6 +33,7 @@ class FileReader:
             res = pd.read_csv(target, **_def)
 
         elif file_type in ["xls", "xlsx"]:
+            _encoding = _def.pop("encoding")
             if "sheet_name" in _def:
                 res = pd.read_excel(str(target), **_def)
             else:

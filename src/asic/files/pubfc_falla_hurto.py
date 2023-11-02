@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 pubfc_falla_hurto_format = {
     "type": "xlsx",
-    "sheet_name" "encoding": "cp1252",
+    "sheet_name": 0,
+    "encoding": "cp1252",
     "dt_fields": {
         "Fecha de Reporte de la Falla": {"format": "%Y-%m-%d %H:%M:%S"},
         "Fecha Máxima de Normalización": {"format": "%Y-%m-%d %H:%M:%S"},

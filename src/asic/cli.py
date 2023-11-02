@@ -2,14 +2,14 @@ import datetime as dt
 import logging
 import os
 import pathlib
-from ssl import SSLZeroReturnError
+import ssl
 from typing import Optional
 
 import pydantic
 import typer
 from rich.progress import track
 
-from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
+from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP, metadata
 from asic.config import ASICFileVisibility
 from asic.files import SupportedFiles
 from asic.ftp import (
@@ -77,6 +77,19 @@ def main(
     ctx.meta["ASIC_FTPS_PASSWORD"] = pydantic.SecretStr(ftps_password)
 
 
+def validate_month(month: str) -> str:
+    for f in YEAR_MONTH_FORMATS:
+        try:
+            _value = dt.datetime.strptime(month, f).date()
+            break
+        except ValueError:
+            continue
+    else:
+        raise typer.BadParameter(YEAR_MONTH_MATCH_ERROR_MESSAGE)
+
+    return month
+
+
 def parse_month(month: str) -> dt.date:
     for f in YEAR_MONTH_FORMATS:
         try:
@@ -85,7 +98,7 @@ def parse_month(month: str) -> dt.date:
         except ValueError:
             continue
     else:
-        raise typer.BadParameter(YEAR_MONTH_MATCH_ERROR_MESSAGE)
+        raise ValueError(f"Failed to parse {month} as date")
 
     return value
 
@@ -102,8 +115,8 @@ def validate_version(version: str) -> str:
     return version
 
 
-def months_callback(values: list[str]) -> list[dt.date]:
-    months = sorted(list(set([parse_month(v) for v in values])), reverse=True)
+def months_callback(values: list[str]) -> list[str]:
+    months = sorted(list(set([validate_month(v) for v in values])), reverse=True)
     return months
 
 
@@ -196,7 +209,7 @@ def list_files(
     ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
 
     if not extensions:
-        extensions = [None]
+        extensions = [None]  # type: ignore
     if not files:
         files = SUPPORTED_FILES
 
@@ -210,14 +223,14 @@ def list_files(
         ftps_password=ftps_password,
         ftps_port=ftps_port,
     )
-
+    month_dates = [parse_month(m) for m in months]
     file_list = list_supported_files(
         ftps,
         agent=agent,
-        months=months,
+        months=month_dates,
         extensions=extensions,
         files=files,
-        locations=locations,
+        locations=list(locations),
     )
 
     ftps.quit()
@@ -255,7 +268,7 @@ def download(
     FTP authentication info should be  provided as environment variables (ASIC_FTP_*)
     """
     if not extensions:
-        extensions = [None]
+        extensions = [None]  # type: ignore
     if not files:
         files = SUPPORTED_FILES
 
@@ -274,14 +287,14 @@ def download(
         ftps_password=ftps_password,
         ftps_port=ftps_port,
     )
-
+    month_dates = [parse_month(m) for m in months]
     file_list = list_supported_files(
         ftps,
         agent=agent,
-        months=months,
+        months=month_dates,
         extensions=extensions,
         files=files,
-        locations=locations,
+        locations=list(locations),
     )
 
     logger.info(f"Total files to download: {len(file_list)}")
@@ -290,12 +303,13 @@ def download(
         remote = f
         local = destination / str(f)[1:]  # hack to remove root anchor
         os.makedirs(local.parent, exist_ok=True)
-        logger.info(f"Downloading {remote} to {local}")
+        logger.debug(f"Downloading {remote} to {local}")
 
         try:
             grab_file(ftps, remote, local)
 
-        except SSLZeroReturnError:
+        except (ssl.SSLZeroReturnError, ssl.SSLEOFError):
+            logger.warning("Download failed, retrying connection")
             ftps = get_ftps(
                 ftps_host=ftps_host,
                 ftps_user=ftps_user,
@@ -306,3 +320,31 @@ def download(
             grab_file(ftps, remote, local)
 
     ftps.quit()
+
+
+@cli.command()
+def prepro(
+    ctx: typer.Context,
+    as_: str = typer.Argument(
+        None, callback=validate_file, help=SUPPORTED_FILES_ERROR_MESSAGE
+    ),
+    source: pathlib.Path = typer.Argument(...),
+    destination: pathlib.Path = typer.Argument(None),
+):
+    """
+    Preprocess a local file as an asic file into DESTINATION folder.
+
+    FTP authentication info should be  provided as environment variables (ASIC_FTP_*)
+    """
+    file_to_preprocess = SupportedFiles[as_.upper()]
+    if not source.is_file():
+        raise typer.BadParameter("Source must be a file, not a directory")
+    if destination is None:
+        destination = source.parent
+    assert destination.is_dir()
+    print(
+        f"Preprocesing file {source} as '{file_to_preprocess.name}' into {destination}"
+    )
+    file_metadata = metadata.extract_metadata_from_local_path(source, as_)
+    print(f"Metadata: {file_metadata}")
+    print(f"{file_to_preprocess.preprocess(source, file_metadata)}")

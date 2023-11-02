@@ -6,7 +6,7 @@ import pydantic
 
 from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 
-from .config import LOCATION_REGEX
+from .config import LOCATION_REGEX, ASICFileVisibility
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class FileItemInfo(pydantic.BaseModel):
     day: int | None
     extension: str
     code: str
-    version: str
+    version: str | None
     agent: str | None
 
     class Config:
@@ -54,17 +54,21 @@ def extract_metadata_from_remote_path(
         raise ValueError(
             f"failed to extract metadata from file path {file_path} using pattern {path_pattern}"
         )
-    assert match.group("location_month") == match.group("month")
+    match_groups = match.groupdict()
 
-    year = (match.group("location_year"),)
-    month = (match.group("month"),)
-    extension = (match.group("ext"),)
-    code = (match.group("code"),)
-    version = (ASIC_FILE_EXTENSION_MAP[match.group("ext").lower()].normalized_version,)
-    try:
-        day = int(match.group("day"))
-    except Exception:
-        day = None
+    year = int(match_groups.get("location_year", match_groups["name_year"]))
+    month = int(match_groups.get("location_month", match_groups["name_month"]))
+    day = int(match_groups.get("location_day", match_groups.get("name_day", None)))
+    extension = match_groups["ext"]
+    code = match_groups["code"]
+    if extension in ASIC_FILE_EXTENSION_MAP:
+        version = ASIC_FILE_EXTENSION_MAP[extension].normalized_version
+    else:
+        version = None
+    if file_config.visibility == ASICFileVisibility.AGENT:
+        agent = match_groups["agent"]
+    else:
+        agent = None
     return FileItemInfo(
         path=file_path,
         year=year,
@@ -73,6 +77,7 @@ def extract_metadata_from_remote_path(
         extension=extension,
         code=code,
         version=version,
+        agent=agent,
     )
 
 
@@ -100,22 +105,30 @@ def extract_metadata_from_local_path(
         raise ValueError(f"Unsupported file code '{as_}'")
 
     path_pattern = LOCATION_REGEX.pattern + file_config.name_pattern
+    name_pattern = file_config.name_pattern
     match = re.match(path_pattern, str(file_path))
     if match is None:
-        raise ValueError(
-            f"failed to extract metadata from file path {file_path} using pattern {path_pattern}"
-        )
-    assert match.group("location_month") == match.group("month")
+        match = re.match(name_pattern, str(file_path))
+        if match is None:
+            raise ValueError(
+                f"failed to extract metadata from file path {file_path} using pattern {path_pattern}"
+            )
+    match_groups = match.groupdict()
 
-    year = (match.group("location_year"),)
-    month = (match.group("month"),)
-    extension = (match.group("ext"),)
-    code = (match.group("code"),)
-    version = (ASIC_FILE_EXTENSION_MAP[match.group("ext").lower()].normalized_version,)
-    try:
-        day = int(match.group("day"))
-    except Exception:
-        day = None
+    year = int(match_groups.get("location_year", match_groups["name_year"]))
+    month = int(match_groups.get("location_month", match_groups["name_month"]))
+    day = int(match_groups.get("location_day", match_groups.get("name_day", None)))
+    extension = match_groups["ext"]
+    code = match_groups["code"]
+    if extension in ASIC_FILE_EXTENSION_MAP:
+        version = ASIC_FILE_EXTENSION_MAP[extension].normalized_version
+    else:
+        version = None
+    if file_config.visibility == ASICFileVisibility.AGENT:
+        agent = match_groups["agent"]
+    else:
+        agent = None
+
     return FileItemInfo(
         path=file_path,
         year=year,
@@ -124,6 +137,7 @@ def extract_metadata_from_local_path(
         extension=extension,
         code=code,
         version=version,
+        agent=agent,
     )
 
 

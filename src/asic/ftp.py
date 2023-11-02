@@ -27,7 +27,7 @@ class DownloadSpec(pydantic.BaseModel):
 def get_ftps(
     ftps_host: str,
     ftps_user: str,
-    ftps_password: str,
+    ftps_password: pydantic.SecretStr,
     ftps_port: int,
 ):
     ftps = ftplib.FTP_TLS(
@@ -51,7 +51,7 @@ def grab_file(ftp: ftplib.FTP, remote: pathlib.PurePath, local: pathlib.Path):
     with open(local, "wb") as dst:
         try:
             ftp.retrbinary("RETR " + str(remote), dst.write)
-        except:
+        except ftplib.error_reply:
             logger.exception(f"Failed to download file '{str(remote)}'")
 
 
@@ -101,7 +101,11 @@ def fiter_files_by_date_range(
     filtered: list[pathlib.PurePath] = []
     for f in file_list:
         match = reo.search(str(f.name))
-        (f_day, f_month) = match.group("name_day", "name_month")
+        if match is not None:
+            (f_day, f_month) = match.group("name_day", "name_month")
+        else:
+            logger.warning(f"Failed to extract month or day from {f.name}")
+            continue
         try:
             f_year = match.group("name_year")
         except IndexError:
@@ -179,7 +183,7 @@ def list_supported_files_in_location(
         )
         logger.debug(f"Kept {len(new_files)} files")
         supported_files_in_location.extend(new_files)
-    logger.info(f"Total files kept {len(supported_files_in_location)}")
+    logger.debug(f"Total files kept {len(supported_files_in_location)}")
     return supported_files_in_location
 
 
