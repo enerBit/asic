@@ -37,14 +37,14 @@ class SupportedFiles(str, enum.Enum):
     AFAC = "afac", afac_preprocess
     DSPCTTOS = "dspcttos", dspcttos_preprocess
     PUBFC = "pubfc", pubfc_preprocess
-    PUBFC_FALLA_HURTO = "pubfc_falla_hurto", pubfc_falla_hurto_preprocess
+    PUBFC_FALLA_HURTO = "pubfc_falla-hurto", pubfc_falla_hurto_preprocess
     TFROC = "tfroc", tfroc_preprocess
     CLIQ = "cliq", cliq_preprocess
     BALCTTOS = "balcttos", balcttos_preprocess
     DESBM = "desbm", desbm_preprocess
     DESBMEX = "desbmex", desbmex_preprocess
     OEFAGNCH = "oefagnch", oefagnch_preprocess
-    FRONTERAS = "fronteras", fronteras_preprocess
+    FRONTERAS = "fronterascomerciales", fronteras_preprocess
 
     def __new__(cls, code, preprocessor):
         obj = str.__new__(cls, [code])
