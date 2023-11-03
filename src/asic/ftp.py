@@ -69,9 +69,9 @@ def get_path_version(path: pathlib.PurePath) -> str:
 def list_files_in_location(
     ftp: ftplib.FTP,
     location: str,
-) -> list[pathlib.PurePath]:
+) -> list[pathlib.PurePosixPath]:
     ftp.cwd(location)
-    location_path = pathlib.PurePath(location)
+    location_path = pathlib.PurePosixPath(location)
     logger.debug(f"Listing files in location {location}")
     files_in_location = ftp.nlst()
     logger.debug(f"Total files found in location {len(files_in_location)}")
@@ -83,7 +83,7 @@ def list_files_in_location(
 def fiter_files_by_pattern(
     file_list: list[pathlib.PurePath], name_pattern: str
 ) -> list[metadata.FileItemInfo]:
-    reo = re.compile(name_pattern)
+    reo = re.compile(name_pattern, flags=re.IGNORECASE)
     # filtered = [f for f in file_list if reo.search(str(f.name))]
     filtered = []
     for f in file_list:
@@ -131,7 +131,9 @@ def list_supported_files(
     ):
         try:
             remote_location = l_template.format(
-                location_year=month.year, location_month=month.month, agent=agent
+                location_year=month.year,
+                location_month=month.month,
+                location_agent=agent,
             )
         except Exception:
             logger.warning(
