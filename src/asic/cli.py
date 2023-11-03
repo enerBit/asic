@@ -235,7 +235,7 @@ def list_files(
     ftps.quit()
 
     for f in file_list:
-        typer.echo(f)
+        typer.echo(f.model_dump_json())
 
 
 @cli.command()
