@@ -4,14 +4,13 @@ import pathlib
 # Third party imports
 import pandas as pd
 
-# Local application imports
-from asic.reader import FileReader
+from asic.files.file import AsicFile, FileKind, VisibilityEnum
 
-from ..metadata import FileItemInfo
+# Local application imports
 
 logger = logging.getLogger(__name__)
 
-aenc_format = {
+FORMAT = {
     "type": "csv",
     "sep": ";",
     "encoding": "cp1252",
@@ -49,89 +48,122 @@ aenc_format = {
 }
 
 
-class AENC(FileReader):
-    def __init__(self):
-        return super().__init__(aenc_format.copy())
+class AENC(AsicFile):
+    kind = FileKind.AENC
+    visibility = VisibilityEnum.AGENT
+    name_pattern = "(?P<kind>aenc)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    location_pattern = "/INFORMACION_XM/USUARIOSK/(?P<location_agent>[a-zA-Z]{4})/SIC/COMERCIA/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
+    description = "Los archivos de demanda de agente por frontera"
+    # path = None
+    # year = None
+    # month = None
+    # day = None
+    # extension = None
+    # version = None
+    # agent = None
 
+    _format = FORMAT
 
-def aenc_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFrame:
-    """
-    AENC: es un archivo diario
-    versiones: TX2, TXR, TXF
-    VALOR: energia calculada por ASIC para frontera en cada periodo
-    """
-    ance_reader = AENC()
-    total = ance_reader.read(filepath)
-    total["FECHA"] = f"{item.year:04d}-{item.month:02d}-{item.day:02d}"
-    total["AGENTE"] = item.agent
+    @property
+    def path(self):
+        return self._path
 
-    total["FECHA"] = pd.to_datetime(
-        total["FECHA"],
-        format="%Y-%m-%d",
-    )
-    total = (
-        total.set_index(
-            [
-                "FECHA",
-                "AGENTE",
-                "CODIGO SIC",
-                "CODIGO PROPIO",
-                "TIPO DE AGRUPACIÓN",
-                "IMPO - EXPO",
-            ]
+    @property
+    def year(self):
+        return self._year
+
+    @property
+    def month(self):
+        return self._month
+
+    @property
+    def day(self):
+        return self._day
+
+    @property
+    def extension(self):
+        return self._extension
+
+    @property
+    def version(self):
+        return self._version
+
+    @property
+    def agent(self):
+        return self._agent
+
+    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
+        """
+        AENC: es un archivo diario
+        versiones: TX2, TXR, TXF
+        VALOR: energia calculada por ASIC para frontera en cada periodo
+        """
+        total = self.reader.read(filepath)
+        total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
+        total["AGENTE"] = self.agent
+
+        total["FECHA"] = pd.to_datetime(
+            total["FECHA"],
+            format="%Y-%m-%d",
         )
-        .stack()
-        .reset_index()
-    )
-    total = total.rename(columns={"level_6": "NOMBRE HORA", 0: "VALOR"})
-    total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
-    total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
-    total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
+        total = (
+            total.set_index(
+                [
+                    "FECHA",
+                    "AGENTE",
+                    "CODIGO SIC",
+                    "CODIGO PROPIO",
+                    "TIPO DE AGRUPACIÓN",
+                    "IMPO - EXPO",
+                ]
+            )
+            .stack()
+            .reset_index()
+        )
+        total = total.rename(columns={"level_6": "NOMBRE HORA", 0: "VALOR"})
+        total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
+        total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
+        total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
 
-    # total = (
-    #     total[
-    #         ["FECHA", "NOMBRE HORA", "HORA", "FECHA_HORA", "AGENTE", "CODIGO", "VALOR"]
-    #     ]
-    #     .set_index(["FECHA", "NOMBRE HORA", "HORA", "FECHA_HORA", "AGENTE", "CODIGO"])
-    #     .unstack()
-    #     .reset_index()
-    # )
-    # cols = [
-    #     f"{l1}_{l0}" if l1 else l0
-    #     for (l0, l1) in zip(
-    #         total.columns.get_level_values(0), total.columns.get_level_values(1)
-    #     )
-    # ]
-    # total.columns = cols
-    return_cols = [
-        "FECHA_HORA",
-        "AGENTE",
-        "CODIGO SIC",
-        "CODIGO PROPIO",
-        "TIPO DE AGRUPACIÓN",
-        "IMPO - EXPO",
-        "VALOR",
-    ]
-    return total[return_cols]
+        # total = (
+        #     total[
+        #         ["FECHA", "NOMBRE HORA", "HORA", "FECHA_HORA", "AGENTE", "CODIGO", "VALOR"]
+        #     ]
+        #     .set_index(["FECHA", "NOMBRE HORA", "HORA", "FECHA_HORA", "AGENTE", "CODIGO"])
+        #     .unstack()
+        #     .reset_index()
+        # )
+        # cols = [
+        #     f"{l1}_{l0}" if l1 else l0
+        #     for (l0, l1) in zip(
+        #         total.columns.get_level_values(0), total.columns.get_level_values(1)
+        #     )
+        # ]
+        # total.columns = cols
+        return_cols = [
+            "FECHA_HORA",
+            "AGENTE",
+            "CODIGO SIC",
+            "CODIGO PROPIO",
+            "TIPO DE AGRUPACIÓN",
+            "IMPO - EXPO",
+            "VALOR",
+        ]
+        return total[return_cols]
 
 
 if __name__ == "__main__":
     import pathlib
 
-    aenc_path = pathlib.Path(
-        r"C:/Users/pablete/enerbit/enerbit.core.eds/files/aenc0703.Tx2"
+    path = pathlib.Path(
+        "./borrar/informacion_xm/UsuariosK/enbc/SIC/COMERCIA/2023-10/aenc1001.Tx2"
     )
-    data = AENC().read(aenc_path)
-    print(data.head())
-    info = FileItemInfo(
-        path=aenc_path,
-        code="aenc",
-        year=2022,
-        month=7,
-        day=3,
-        extension="tx2",
-        version="002",
-        agent="enbc",
-    )
-    data_proc = aenc_preprocess(aenc_path, info)
-    print(data_proc.sample(5))
+    purepath = pathlib.PurePosixPath("/") / pathlib.PurePosixPath(
+        path.as_posix()
+    ).relative_to("./borrar")
+    file = AENC.from_remote_path(purepath)
+    print(file)
+    data = file.read(path)
+    print(data.head(10))
+    prepro_data = file.preprocess(path)
+    print(prepro_data.head(10))

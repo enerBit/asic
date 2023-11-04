@@ -8,6 +8,7 @@ import pydantic
 from typing_extensions import Self
 
 from asic import ASIC_FILE_EXTENSION_MAP
+from asic.reader import FileReader
 
 PATTERN_REGEX = re.compile(
     pattern=r"""
@@ -57,8 +58,9 @@ def pattern_to_template(patt: str) -> str:
 
 class FileKind(str, enum.Enum):
     ADEM = "adem"
+    AENC = "aenc"
+
     # TGRL = "tgrl"
-    # AENC = "aenc"
     # TRSM = "trsm"
     # LDCBMR = "ldcbmr"
     # PEP = "pep"
@@ -84,7 +86,7 @@ class AsicFileMetadata(pydantic.BaseModel):
     day: int | None = None
     extension: str
     version: str | None = pydantic.Field(None, pattern=r"^[0-9]{3}$")
-    agent: str | None = pydantic.Field(None, pattern=r"^[a-z]{3}$")
+    agent: str | None = pydantic.Field(None, pattern=r"^[a-z]{4}$")
 
 
 class VisibilityEnum(str, enum.Enum):
@@ -162,9 +164,29 @@ class AsicFile(ABC):
     def _format(self) -> dict:
         pass
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        path: pathlib.PurePosixPath,
+        year: int,
+        month: int,
+        day: int | None = None,
+        extension: str | None = None,
+        version: str | None = None,
+        agent: str | None = None,
+    ) -> None:
+        self._path: pathlib.PurePosixPath = path
+        self._year: int = year
+        self._month: int = month
+        self._day: int | None = day
+        self._extension: str | None = extension
+        self._version: str | None = version
+        self._agent: str | None = agent
+        self.reader = FileReader(self._format)
         self.name_template = pattern_to_template(self.name_pattern)
         self.location_template = pattern_to_template(self.location_pattern)
+
+    def read(self, local_path: pathlib.Path) -> pd.DataFrame:
+        return self.reader.read(local_path)
 
     @classmethod
     def from_remote_path(cls, remote_path: pathlib.PurePosixPath) -> Self:

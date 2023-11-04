@@ -9,7 +9,6 @@ import pandas as pd
 from asic.files.file import AsicFile, FileKind, VisibilityEnum
 
 # Local application imports
-from asic.reader import FileReader
 
 logger = logging.getLogger(__name__)
 
@@ -56,38 +55,36 @@ class ADEM(AsicFile):
     name_pattern = "(?P<kind>adem)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[tT]{1}[xX]{1}[a-zA-Z0-9]+)"
     location_pattern = "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
     description = "Los archivos de demanda comercial"
-    # path = None
-    # year = None
-    # month = None
-    # day = None
-    # extension = None
-    # version = None
-    # agent = None
 
     _format = FORMAT
 
-    def __init__(
-        self,
-        path: pathlib.PurePosixPath,
-        year: int,
-        month: int,
-        day: int | None = None,
-        extension: str | None = None,
-        version: str | None = None,
-        agent: str | None = None,
-    ) -> None:
-        self.path: pathlib.PurePosixPath = path
-        self.year: int = year
-        self.month: int = month
-        self.day: int | None = day
-        self.extension: str | None = extension
-        self.version: str | None = version
-        self.agent: str | None = agent
-        self.reader = FileReader(self._format)
-        super().__init__()
+    @property
+    def path(self):
+        return self._path
 
-    def read(self, local_path: pathlib.Path) -> pd.DataFrame:
-        return self.reader.read(local_path)
+    @property
+    def year(self):
+        return self._year
+
+    @property
+    def month(self):
+        return self._month
+
+    @property
+    def day(self):
+        return self._day
+
+    @property
+    def extension(self):
+        return self._extension
+
+    @property
+    def version(self):
+        return self._version
+
+    @property
+    def agent(self):
+        return self._agent
 
     def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
         """
