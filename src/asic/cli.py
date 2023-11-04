@@ -8,7 +8,7 @@ import pydantic
 import typer
 from rich.progress import track
 
-from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP, metadata
+from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 from asic.config import ASICFileVisibility
 from asic.files import SupportedFiles
 from asic.ftp import (
@@ -241,6 +241,9 @@ def list_files(
 @cli.command()
 def download(
     ctx: typer.Context,
+    is_preprocessing_required: bool = typer.Option(
+        False, "--prepro", help="Preprocess each file after donwload"
+    ),
     months: list[str] = typer.Option(
         ...,
         "--month",
@@ -320,32 +323,11 @@ def download(
 
             grab_file(ftps, remote.path, local)
 
+        if is_preprocessing_required:
+            preprocessed = SupportedFiles[f.code.upper()].preprocess(local, f)
+            write_to = local.with_suffix(".csv")
+            preprocessed.to_csv(
+                write_to,
+            )
+
     ftps.quit()
-
-
-@cli.command()
-def prepro(
-    ctx: typer.Context,
-    as_: str = typer.Argument(
-        None, callback=validate_file, help=SUPPORTED_FILES_ERROR_MESSAGE
-    ),
-    source: pathlib.Path = typer.Argument(...),
-    destination: pathlib.Path = typer.Argument(None),
-):
-    """
-    Preprocess a local file as an asic file into DESTINATION folder.
-
-    FTP authentication info should be  provided as environment variables (ASIC_FTP_*)
-    """
-    file_to_preprocess = SupportedFiles[as_.upper()]
-    if not source.is_file():
-        raise typer.BadParameter("Source must be a file, not a directory")
-    if destination is None:
-        destination = source.parent
-    assert destination.is_dir()
-    print(
-        f"Preprocesing file {source} as '{file_to_preprocess.name}' into {destination}"
-    )
-    file_metadata = metadata.extract_metadata_from_local_path(source, as_)
-    print(f"Metadata: {file_metadata}")
-    print(f"{file_to_preprocess.preprocess(source, file_metadata)}")

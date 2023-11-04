@@ -9,7 +9,8 @@ from typing import Iterable
 
 import pydantic
 
-from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP, metadata
+from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
+from asic.files import metadata
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ def list_files_in_location(
 
 
 def fiter_files_by_pattern(
-    file_list: list[pathlib.PurePath], name_pattern: str
+    file_list: list[pathlib.PurePosixPath], name_pattern: str
 ) -> list[metadata.FileItemInfo]:
     reo = re.compile(name_pattern, flags=re.IGNORECASE)
     # filtered = [f for f in file_list if reo.search(str(f.name))]

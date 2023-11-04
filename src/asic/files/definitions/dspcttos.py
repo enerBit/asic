@@ -102,7 +102,15 @@ def dspcttos_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFr
     )
     total = (
         total.set_index(
-            ["FECHA", "CONTRATO", "VENDEDOR", "COMPRADOR", "TIPO", "TIPOMERC", "TIPO ASIGNA"]
+            [
+                "FECHA",
+                "CONTRATO",
+                "VENDEDOR",
+                "COMPRADOR",
+                "TIPO",
+                "TIPOMERC",
+                "TIPO ASIGNA",
+            ]
         )
         .stack()
         .reset_index()
@@ -148,7 +156,7 @@ def dspcttos_preprocess(filepath: pathlib.Path, item: FileItemInfo) -> pd.DataFr
         .reset_index()
     )
     cols = [
-        f"{l1}_{l0}" if l1 else l0
+        f"{l1}_{l0}" if l1 else str(l0)
         for (l0, l1) in zip(
             total.columns.get_level_values(0), total.columns.get_level_values(1)
         )

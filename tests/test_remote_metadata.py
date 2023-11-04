@@ -1,7 +1,7 @@
 import pathlib
 
 import pytest
-from asic.metadata import FileItemInfo, extract_metadata_from_remote_path
+from asic.files.metadata import FileItemInfo, extract_metadata_from_remote_path
 
 
 def test_xlsx_ext_path_without_as():
