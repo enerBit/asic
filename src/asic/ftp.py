@@ -4,13 +4,13 @@ import functools
 import itertools
 import logging
 import pathlib
-import re
-from typing import Iterable
+from typing import Iterable, Type
 
 import pydantic
 
-from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
-from asic.files import metadata
+from asic import ASIC_FILE_EXTENSION_MAP
+from asic.files.definitions import SUPPORTED_FILE_CLASSES
+from asic.files.file import AsicFile, FileKind
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ def get_path_version(path: pathlib.PurePath) -> str:
 
 
 @functools.cache
-def list_files_in_location(
+def list_paths_in_location(
     ftp: ftplib.FTP,
     location: str,
 ) -> list[pathlib.PurePosixPath]:
@@ -81,30 +81,12 @@ def list_files_in_location(
     return paths_in_location
 
 
-def fiter_files_by_pattern(
-    file_list: list[pathlib.PurePosixPath], name_pattern: str
-) -> list[metadata.FileItemInfo]:
-    reo = re.compile(name_pattern, flags=re.IGNORECASE)
-    # filtered = [f for f in file_list if reo.search(str(f.name))]
-    filtered = []
-    for f in file_list:
-        match = reo.search(str(f.name))
-        if match:
-            try:
-                f_metadata = metadata.extract_metadata_from_remote_path(f)
-            except ValueError:
-                logger.warning(f"Failed to extract metadata from {f}")
-                continue
-            filtered.append(f_metadata)
-    return filtered
-
-
 def fiter_files_by_date_range(
-    file_list: list[metadata.FileItemInfo],
+    file_list: list[AsicFile],
     since: dt.date,
     until: dt.date,
-) -> list[metadata.FileItemInfo]:
-    filtered: list[metadata.FileItemInfo] = []
+) -> list[AsicFile]:
+    filtered: list[AsicFile] = []
     for f in file_list:
         f_day = f.day if f.day is not None else 1
         f_date = dt.date(f.year, f.month, f_day)
@@ -114,15 +96,25 @@ def fiter_files_by_date_range(
     return filtered
 
 
+def fiter_files_by_extension(
+    file_list: list[AsicFile],
+    extension: str,
+) -> list[AsicFile]:
+    filtered: list[AsicFile] = [
+        f for f in file_list if f.extension == extension or f.extension is None
+    ]
+    return filtered
+
+
 def list_supported_files(
     ftp: ftplib.FTP,
     *,
     agent: str | None = None,
     months: list[dt.date],
     extensions: list[str],
-    files: list[str],
+    kinds: list[str],
     locations: list[str],
-) -> list[metadata.FileItemInfo]:
+) -> list[AsicFile]:
     logger.info("Listing files")
     file_list = []
     for month, l_template, ext in itertools.product(
@@ -143,10 +135,37 @@ def list_supported_files(
             continue
         logger.debug(f"Listing remote location: {remote_location}")
         files_in_location = list_supported_files_in_location(
-            ftp, remote_location, month, files, ext
+            ftp, remote_location, month, kinds, ext
         )
         file_list.extend(files_in_location)
 
+    return file_list
+
+
+def path_to_asic_file(
+    path: pathlib.PurePosixPath, asic_file_class: Type[AsicFile]
+) -> AsicFile:
+    file = asic_file_class.from_remote_path(path)
+    return file
+
+
+def cast_into_kinds(
+    paths: list[pathlib.PurePosixPath], kinds: dict[FileKind, Type[AsicFile]]
+) -> list[AsicFile]:
+    file_list: list[AsicFile] = []
+    for p in paths:
+        for k, c in kinds.items():
+            logger.debug(f"Trying kind '{k}' for {p}")
+            try:
+                file = path_to_asic_file(p, c)
+                logger.debug(f"Found kind '{k}' for {p}")
+                file_list.append(file)
+                break
+            except ValueError:
+                logger.debug(f"Failed kind '{k}' for {p}")
+                continue
+        else:
+            logger.debug(f"Failed to match a kind to {p} in {kinds.keys()}")
     return file_list
 
 
@@ -154,36 +173,33 @@ def list_supported_files_in_location(
     ftp: ftplib.FTP,
     location: str,
     month: dt.date,
-    file_codes: list[str],
+    kinds: list[str],
     extension: str,
-) -> list[metadata.FileItemInfo]:
-    files = list_files_in_location(ftp, location)
-    logger.debug(f"Total files in location {location}")
+) -> list[AsicFile]:
+    remote_paths = list_paths_in_location(ftp, location)
+    logger.debug(f"Total files in location {len(remote_paths)}")
+    asic_file_kinds_requested = {
+        k: c for k, c in SUPPORTED_FILE_CLASSES.items() if k in kinds
+    }
+    logger.debug(f"Checking for {len(asic_file_kinds_requested)} kinds")
+    remote_files = cast_into_kinds(remote_paths, asic_file_kinds_requested)
+    logger.debug(f"Kept {len(remote_files)} AsicFiles by kind")
+
     since = month
     until = (month.replace(day=1) + dt.timedelta(days=31)).replace(
         day=1
     ) - dt.timedelta(days=1)
 
-    patterns = [c.name_pattern for f, c in ASIC_FILE_CONFIG.items() if f in file_codes]
+    remote_files = fiter_files_by_date_range(remote_files, since, until)
+    logger.debug(f"Kept {len(remote_files)} AsicFiles by date filter")
 
     if extension is not None:
-        patterns = [combine_patterns_and_extension(p, extension) for p in patterns]
+        logger.debug(f"Filtering by ex {len(remote_files)} files")
+        remote_files = fiter_files_by_extension(remote_files, extension)
+        logger.debug(f"Kept {len(remote_files)} AsicFiles by date filter")
 
-    logger.debug(f"Patterns to filter by: {patterns}")
-
-    supported_files_in_location = []
-    for p in patterns:
-        logger.debug(f"Filtering {len(files)} by pattern {p}")
-        new_files = fiter_files_by_pattern(files, p)
-        new_files = fiter_files_by_date_range(
-            new_files,
-            since,
-            until,
-        )
-        logger.debug(f"Kept {len(new_files)} files")
-        supported_files_in_location.extend(new_files)
-    logger.debug(f"Total files kept {len(supported_files_in_location)}")
-    return supported_files_in_location
+    logger.debug(f"Total files kept {len(remote_files)}")
+    return remote_files
 
 
 def combine_patterns_and_extension(pattern: str, extension: str) -> str:
@@ -214,6 +230,6 @@ if __name__ == "__main__":
         user=os.environ["ASIC_FTP_USER"],
         passwd=os.environ["ASIC_FTP_PASSWORD"],
     ) as ftp_aux:
-        files = list_files_in_location(ftp_aux, str(location))
+        files = list_paths_in_location(ftp_aux, str(location))
         for f in files:
             print(f)

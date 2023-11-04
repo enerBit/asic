@@ -79,8 +79,7 @@ class FileKind(str, enum.Enum):
     # FRONTERAS = "fronterascomerciales"
 
 
-class AsicFileMetadata(pydantic.BaseModel):
-    # kind: FileKind
+class AsicFileMetadataInput(pydantic.BaseModel):
     year: int
     month: int
     day: int | None = None
@@ -89,20 +88,26 @@ class AsicFileMetadata(pydantic.BaseModel):
     agent: str | None = pydantic.Field(None, pattern=r"^[a-z]{4}$")
 
 
+class AsicFileMetadata(AsicFileMetadataInput):
+    remote_path: pathlib.PurePosixPath
+    kind: FileKind
+
+
 class VisibilityEnum(str, enum.Enum):
     PUBLIC = "public"
     AGENT = "agent"
 
 
 class AsicFile(ABC):
-    @property
-    @abstractmethod
-    def path(self) -> pathlib.PurePath:
-        pass
+    kind: FileKind
+    visibility: VisibilityEnum
+    name_pattern: str
+    location_pattern: str
+    description: str
 
     @property
     @abstractmethod
-    def kind(self) -> FileKind:
+    def path(self) -> pathlib.PurePosixPath:
         pass
 
     @property
@@ -135,28 +140,8 @@ class AsicFile(ABC):
     def agent(self) -> str | None:
         pass
 
-    @property
     @abstractmethod
-    def visibility(self) -> VisibilityEnum:
-        pass
-
-    @property
-    @abstractmethod
-    def name_pattern(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def location_pattern(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        pass
-
-    @abstractmethod
-    def preprocess(self, arg1) -> pd.DataFrame:
+    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
         pass
 
     @property
@@ -188,6 +173,19 @@ class AsicFile(ABC):
     def read(self, local_path: pathlib.Path) -> pd.DataFrame:
         return self.reader.read(local_path)
 
+    @property
+    def metadata(self) -> AsicFileMetadata:
+        return AsicFileMetadata(
+            remote_path=self.path,
+            kind=self.kind,
+            year=self.year,
+            month=self.month,
+            day=self.day,
+            extension=self.extension,
+            version=self.version,
+            agent=self.agent,
+        )
+
     @classmethod
     def from_remote_path(cls, remote_path: pathlib.PurePosixPath) -> Self:
         path_metadata = cls.extract_metadata_from_remote_path(remote_path)
@@ -197,7 +195,7 @@ class AsicFile(ABC):
     @classmethod
     def extract_metadata_from_remote_path(
         cls, file_path: pathlib.PurePosixPath
-    ) -> AsicFileMetadata:
+    ) -> AsicFileMetadataInput:
         file_path_as_posix = file_path.as_posix()
         path_pattern = cls.location_pattern + cls.name_pattern
         match = re.match(path_pattern, file_path_as_posix, flags=re.IGNORECASE)
@@ -238,7 +236,7 @@ class AsicFile(ABC):
                 agent = match_groups["name_agent"]
         else:
             agent = None
-        return AsicFileMetadata(
+        return AsicFileMetadataInput(
             year=int(year),
             month=int(month),
             day=day,
