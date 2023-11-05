@@ -18,7 +18,7 @@ def local_asic_file_folder_root():
     return pathlib.Path("./borrar/")
 
 
-def test_adem_from_remote_path(balcttos_remote_path):
+def test_balcttos_from_remote_path(balcttos_remote_path):
     path = balcttos_remote_path
     file = BALCTTOS.from_remote_path(path)
     assert file.path == path

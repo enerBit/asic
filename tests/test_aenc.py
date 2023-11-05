@@ -18,7 +18,7 @@ def local_asic_file_folder_root():
     return pathlib.Path("./borrar/")
 
 
-def test_adem_from_remote_path(aenc_remote_path):
+def test_aenc_from_remote_path(aenc_remote_path):
     path = aenc_remote_path
     file = AENC.from_remote_path(path)
     assert file.path == path
