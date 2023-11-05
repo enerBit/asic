@@ -59,6 +59,7 @@ def pattern_to_template(patt: str) -> str:
 class FileKind(str, enum.Enum):
     ADEM = "adem"
     AENC = "aenc"
+    BALCTTOS = "balcttos"
 
     # TGRL = "tgrl"
     # TRSM = "trsm"
@@ -66,17 +67,17 @@ class FileKind(str, enum.Enum):
     # PEP = "pep"
     # TRSD = "trsd"
     # SNTIE = "sntie"
-    # AFAC = "afac"
     # DSPCTTOS = "dspcttos"
     # PUBFC = "pubfc"
     # PUBFC_FALLA_HURTO = "pubfc_falla-hurto"
     # TFROC = "tfroc"
     # CLIQ = "cliq"
-    # BALCTTOS = "balcttos"
+
     # DESBM = "desbm"
     # DESBMEX = "desbmex"
     # OEFAGNCH = "oefagnch"
     # FRONTERAS = "fronterascomerciales"
+    # AFAC = "afac"
 
 
 class AsicFileMetadataInput(pydantic.BaseModel):
