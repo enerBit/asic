@@ -230,7 +230,6 @@ class AsicFile(ABC):
                 f"One of ['ext_versioned', 'ext_excel'] must be in {file_path_as_posix}"
             )
 
-        kind = match_groups["kind"].lower()
         if cls.visibility == VisibilityEnum.AGENT:
             agent = match_groups.get("location_agent", None)
             if agent is None:
