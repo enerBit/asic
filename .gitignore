@@ -1,7 +1,6 @@
 *.env
 .vscode/
-tests/
-
+tests/informacion_xm/usuariosk/xxxc/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

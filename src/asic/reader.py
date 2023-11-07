@@ -23,7 +23,7 @@ class FileReader:
 
     def read(self, target: Union[str, Path, StringIO]) -> pd.DataFrame:
         """Reads DataFrame from target."""
-        _def = self.file_def
+        _def = self.file_def.copy()
         file_type = _def.pop("type", None)
         dt_fields = _def.pop("dt_fields", None)
 
@@ -33,6 +33,7 @@ class FileReader:
             res = pd.read_csv(target, **_def)
 
         elif file_type in ["xls", "xlsx"]:
+            _encoding = _def.pop("encoding")
             if "sheet_name" in _def:
                 res = pd.read_excel(str(target), **_def)
             else:
