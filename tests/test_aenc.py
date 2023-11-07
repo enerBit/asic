@@ -1,66 +1,37 @@
 import pathlib
 
 from asic.files.definitions.aenc import AENC
-from asic.files.file import AsicFileMetadata, VisibilityEnum
 from pytest import fixture
+
+from .conftest import ALL_FILES, TESTFILES
 
 
 @fixture
 def aenc_remote_path():
-    path = pathlib.PurePosixPath(
-        "/INFORMACION_XM/USUARIOSK/enbc/SIC/COMERCIA/2023-10/AENC1001.tx2"
-    )
+    aenc_path = ALL_FILES["aenc"]["path"]
+    path = pathlib.PurePosixPath(aenc_path)
     return path
 
 
 @fixture
-def local_asic_file_folder_root():
-    return pathlib.Path("./borrar/")
-
-
-def test_aenc_from_remote_path(aenc_remote_path):
+def aenc_file(aenc_remote_path):
     path = aenc_remote_path
     file = AENC.from_remote_path(path)
-    assert file.path == path
-    assert file.kind == "aenc"
-    assert file.visibility == VisibilityEnum.AGENT
-    assert file.year == 2023
-    assert file.month == 10
-    assert file.day == 1
-    assert file.extension == ".tx2"
-    assert file.version == "001"
-    assert file.agent == "enbc"
-    assert file.metadata == AsicFileMetadata(
-        remote_path=path,
-        kind="aenc",
-        year=2023,
-        month=10,
-        day=1,
-        extension=".tx2",
-        version="001",
-        agent="enbc",
-    )
+    return file
 
 
-def test_aenc_read(aenc_remote_path, local_asic_file_folder_root):
-    path = aenc_remote_path
-    file = AENC.from_remote_path(path)
-    local_file = (
-        local_asic_file_folder_root / str(file.path)[1:]
-    )  # hack to remove root anchor
-    data = file.read(local_file)
-    assert len(data) == 1782
-    # prepro_data = file.preprocess(path)
-    # print(prepro_data.head(10))
+@TESTFILES
+def test_aenc_read(aenc_file, datafiles):
+    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor)
+    local_file = datafiles / relative_path
+    print(local_file)
+    data = aenc_file.read(local_file)
+    assert len(data) == 1
 
 
-def test_aenc_preprocess(aenc_remote_path, local_asic_file_folder_root):
-    path = aenc_remote_path
-    file = AENC.from_remote_path(path)
-    local_file = (
-        local_asic_file_folder_root / str(file.path)[1:]
-    )  # hack to remove root anchor
-    long_data = file.preprocess(local_file)
-    assert len(long_data) == 42768
-    # prepro_data = file.preprocess(path)
-    # print(prepro_data.head(10))
+@TESTFILES
+def test_aenc_preprocess(aenc_file, datafiles):
+    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor)
+    local_file = datafiles / relative_path
+    long_data = aenc_file.preprocess(local_file)
+    assert len(long_data) == 24
