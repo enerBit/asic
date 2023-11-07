@@ -22,7 +22,7 @@ def aenc_file(aenc_remote_path):
 
 @TESTFILES
 def test_aenc_read(aenc_file, datafiles):
-    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor)
+    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor).lower()
     local_file = datafiles / relative_path
     print(local_file)
     data = aenc_file.read(local_file)
@@ -31,7 +31,7 @@ def test_aenc_read(aenc_file, datafiles):
 
 @TESTFILES
 def test_aenc_preprocess(aenc_file, datafiles):
-    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor)
+    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor).lower()
     local_file = datafiles / relative_path
     long_data = aenc_file.preprocess(local_file)
     assert len(long_data) == 48

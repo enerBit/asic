@@ -52,7 +52,7 @@ class AENC(AsicFile):
     kind = FileKind.AENC
     visibility = VisibilityEnum.AGENT
     name_pattern = "(?P<kind>aenc)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
-    location_pattern = "/INFORMACION_XM/USUARIOSK/(?P<location_agent>[a-zA-Z]{4})/SIC/COMERCIA/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
+    location_pattern = "/informacion_xm/USUARIOSK/(?P<location_agent>[a-zA-Z]{4})/SIC/COMERCIA/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
     description = "Los archivos de demanda de agente por frontera"
     # path = None
     # year = None

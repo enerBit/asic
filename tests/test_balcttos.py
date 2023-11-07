@@ -22,7 +22,7 @@ def balcttos_file(balcttos_remote_path):
 
 @TESTFILES
 def test_balcttos_read(balcttos_file, datafiles):
-    relative_path = balcttos_file.path.relative_to(balcttos_file.path.anchor)
+    relative_path = balcttos_file.path.relative_to(balcttos_file.path.anchor).lower()
     local_file = datafiles / relative_path
     print(local_file)
     data = balcttos_file.read(local_file)

@@ -5,7 +5,7 @@
 
 
 # def test_xlsx_ext_path_without_as():
-#     str_path = r"/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/Fronteras_en_proceso_de_registro/PUB_Registros/PubFC2023-05-01.xlsx"
+#     str_path = r"/informacion_xm/publicok/sic/comercia/Fronteras_en_proceso_de_registro/PUB_Registros/PubFC2023-05-01.xlsx"
 #     path = pathlib.PurePath(str_path)
 #     fii = FileItemInfo(
 #         path=path,
@@ -221,7 +221,7 @@
 
 
 # def test_pubfc_path_without_as():
-#     str_path = r"/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/Fronteras_en_proceso_de_registro/PUB_Registros/PubFC2023-05-01.xlsx"
+#     str_path = r"/informacion_xm/publicok/sic/comercia/Fronteras_en_proceso_de_registro/PUB_Registros/PubFC2023-05-01.xlsx"
 #     path = pathlib.PurePath(str_path)
 #     fii = FileItemInfo(
 #         path=path,
@@ -237,7 +237,7 @@
 
 
 # def test_pubfc_falla_hurto_path_without_as():
-#     str_path = r"/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/Fronteras_en_proceso_de_registro/PUB_Falla_Hurto/PubFC_Falla-Hurto2023-05-01.xlsx"
+#     str_path = r"/informacion_xm/publicok/sic/comercia/Fronteras_en_proceso_de_registro/PUB_Falla_Hurto/PubFC_Falla-Hurto2023-05-01.xlsx"
 #     path = pathlib.PurePath(str_path)
 #     fii = FileItemInfo(
 #         path=path,
@@ -253,7 +253,7 @@
 
 
 # def test_fronteras_path_without_as():
-#     str_path = r"/INFORMACION_XM/usuariosk/enbc/SIC/Fronteras/2023-05/ENBC_FronterasComerciales_02-05-2023.xlsx"
+#     str_path = r"/informacion_xm/usuariosk/enbc/SIC/Fronteras/2023-05/ENBC_FronterasComerciales_02-05-2023.xlsx"
 #     path = pathlib.PurePath(str_path)
 #     fii = FileItemInfo(
 #         path=path,
