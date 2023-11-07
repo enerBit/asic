@@ -29,7 +29,7 @@ ALL_FILES = {
         "agent": None,
     },
     "aenc": {
-        "path": "/INFORMACION_XM/USUARIOSK/XXXC/SIC/COMERCIA/2023-10/aenc1001.tx2",
+        "path": "/INFORMACION_XM/USUARIOSK/XXXC/SIC/COMERCIA/2023-10/aenc1001.Tx2",
         "kind": "aenc",
         "visibility": "agent",
         "year": 2023,
