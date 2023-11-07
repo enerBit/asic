@@ -20,18 +20,23 @@ def balcttos_file(balcttos_remote_path):
     return file
 
 
-@TESTFILES
-def test_balcttos_read(balcttos_file, datafiles):
-    relative_path = balcttos_file.path.relative_to(balcttos_file.path.anchor).lower()
+@fixture
+def local_balcttos_file(
+    balcttos_file: BALCTTOS, datafiles: pathlib.Path
+) -> pathlib.Path:
+    relative_path = balcttos_file.path.relative_to(balcttos_file.path.anchor)
     local_file = datafiles / relative_path
-    print(local_file)
-    data = balcttos_file.read(local_file)
+    assert local_file.is_file()
+    return local_file
+
+
+@TESTFILES
+def test_balcttos_read(balcttos_file: BALCTTOS, local_balcttos_file):
+    data = balcttos_file.read(local_balcttos_file)
     assert len(data) == 12
 
 
 @TESTFILES
-def test_balcttos_preprocess(balcttos_file, datafiles):
-    relative_path = balcttos_file.path.relative_to(balcttos_file.path.anchor)
-    local_file = datafiles / relative_path
-    long_data = balcttos_file.preprocess(local_file)
+def test_balcttos_preprocess(balcttos_file: BALCTTOS, local_balcttos_file):
+    long_data = balcttos_file.preprocess(local_balcttos_file)
     assert len(long_data) == 287

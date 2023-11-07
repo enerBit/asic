@@ -20,18 +20,21 @@ def aenc_file(aenc_remote_path):
     return file
 
 
-@TESTFILES
-def test_aenc_read(aenc_file, datafiles):
-    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor).lower()
+@fixture
+def local_aenc_file(aenc_file: AENC, datafiles: pathlib.Path) -> pathlib.Path:
+    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor)
     local_file = datafiles / relative_path
-    print(local_file)
-    data = aenc_file.read(local_file)
+    assert local_file.is_file()
+    return local_file
+
+
+@TESTFILES
+def test_aenc_read(aenc_file: AENC, local_aenc_file):
+    data = aenc_file.read(local_aenc_file)
     assert len(data) == 2
 
 
 @TESTFILES
-def test_aenc_preprocess(aenc_file, datafiles):
-    relative_path = aenc_file.path.relative_to(aenc_file.path.anchor).lower()
-    local_file = datafiles / relative_path
-    long_data = aenc_file.preprocess(local_file)
+def test_aenc_preprocess(aenc_file: AENC, local_aenc_file):
+    long_data = aenc_file.preprocess(local_aenc_file)
     assert len(long_data) == 48
