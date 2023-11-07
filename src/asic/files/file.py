@@ -90,7 +90,7 @@ class AsicFileMetadataInput(pydantic.BaseModel):
 
 
 class AsicFileMetadata(AsicFileMetadataInput):
-    remote_path: pathlib.PurePosixPath
+    remote_path: pathlib.PureWindowsPath
     kind: FileKind
 
 
@@ -108,7 +108,7 @@ class AsicFile(ABC):
 
     @property
     @abstractmethod
-    def path(self) -> pathlib.PurePosixPath:
+    def path(self) -> pathlib.PureWindowsPath:
         pass
 
     @property
@@ -152,7 +152,7 @@ class AsicFile(ABC):
 
     def __init__(
         self,
-        path: pathlib.PurePosixPath,
+        path: pathlib.PureWindowsPath,
         year: int,
         month: int,
         day: int | None = None,
@@ -160,7 +160,7 @@ class AsicFile(ABC):
         version: str | None = None,
         agent: str | None = None,
     ) -> None:
-        self._path: pathlib.PurePosixPath = path
+        self._path: pathlib.PureWindowsPath = path
         self._year: int = year
         self._month: int = month
         self._day: int | None = day
@@ -188,14 +188,14 @@ class AsicFile(ABC):
         )
 
     @classmethod
-    def from_remote_path(cls, remote_path: pathlib.PurePosixPath) -> Self:
+    def from_remote_path(cls, remote_path: pathlib.PureWindowsPath) -> Self:
         path_metadata = cls.extract_metadata_from_remote_path(remote_path)
         file = cls(path=remote_path, **path_metadata.model_dump())
         return file
 
     @classmethod
     def extract_metadata_from_remote_path(
-        cls, file_path: pathlib.PurePosixPath
+        cls, file_path: pathlib.PureWindowsPath
     ) -> AsicFileMetadataInput:
         file_path_as_posix = file_path.as_posix()
         path_pattern = cls.location_pattern + cls.name_pattern

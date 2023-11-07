@@ -9,7 +9,7 @@ from .conftest import ALL_FILES, TESTFILES
 @fixture
 def aenc_remote_path():
     aenc_path = ALL_FILES["aenc"]["path"]
-    path = pathlib.PurePosixPath(aenc_path)
+    path = pathlib.PureWindowsPath(aenc_path)
     return path
 
 
@@ -26,7 +26,7 @@ def test_aenc_read(aenc_file, datafiles):
     local_file = datafiles / relative_path
     print(local_file)
     data = aenc_file.read(local_file)
-    assert len(data) == 1
+    assert len(data) == 2
 
 
 @TESTFILES
@@ -34,4 +34,4 @@ def test_aenc_preprocess(aenc_file, datafiles):
     relative_path = aenc_file.path.relative_to(aenc_file.path.anchor)
     local_file = datafiles / relative_path
     long_data = aenc_file.preprocess(local_file)
-    assert len(long_data) == 24
+    assert len(long_data) == 48

@@ -9,7 +9,7 @@ from .conftest import ALL_FILES, TESTFILES
 @fixture
 def adem_remote_path():
     adem_path = ALL_FILES["adem"]["path"]
-    path = pathlib.PurePosixPath(adem_path)
+    path = pathlib.PureWindowsPath(adem_path)
     return path
 
 

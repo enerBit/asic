@@ -143,7 +143,7 @@ class ADEM(AsicFile):
                 total.columns.get_level_values(0), total.columns.get_level_values(1)
             )
         ]
-        total.columns = cols
+        total.columns = cols  # type: ignore
         return_cols = ["FECHA_HORA", "AGENTE", "DMRE_VALOR", "PRRE_VALOR"]
         return total[return_cols]
 
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     path = pathlib.Path(
         "./borrar/informacion_xm/PublicoK/SIC/COMERCIA/2023-10/adem1001.Tx2"
     )
-    purepath = pathlib.PurePosixPath("/") / pathlib.PurePosixPath(
+    purepath = pathlib.PureWindowsPath("/") / pathlib.PureWindowsPath(
         path.as_posix()
     ).relative_to("./borrar")
     file = ADEM.from_remote_path(purepath)

@@ -9,7 +9,7 @@ from .conftest import ALL_FILES, TESTFILES
 @fixture
 def balcttos_remote_path():
     balcttos_path = ALL_FILES["balcttos"]["path"]
-    path = pathlib.PurePosixPath(balcttos_path)
+    path = pathlib.PureWindowsPath(balcttos_path)
     return path
 
 

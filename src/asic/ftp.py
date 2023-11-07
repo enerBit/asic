@@ -18,7 +18,7 @@ SUPPORTED_ASIC_EXTENSIONS = frozenset(ASIC_FILE_EXTENSION_MAP.keys())
 
 
 class DownloadSpec(pydantic.BaseModel):
-    remote: pathlib.PurePosixPath
+    remote: pathlib.PureWindowsPath
     local: pathlib.Path
 
     class Config:
@@ -70,9 +70,9 @@ def get_path_version(path: pathlib.PurePath) -> str:
 def list_paths_in_location(
     ftp: ftplib.FTP,
     location: str,
-) -> list[pathlib.PurePosixPath]:
+) -> list[pathlib.PureWindowsPath]:
     ftp.cwd(location)
-    location_path = pathlib.PurePosixPath(location)
+    location_path = pathlib.PureWindowsPath(location)
     logger.debug(f"Listing files in location {location}")
     files_in_location = ftp.nlst()
     logger.debug(f"Total files found in location {len(files_in_location)}")
@@ -143,14 +143,14 @@ def list_supported_files(
 
 
 def path_to_asic_file(
-    path: pathlib.PurePosixPath, asic_file_class: Type[AsicFile]
+    path: pathlib.PureWindowsPath, asic_file_class: Type[AsicFile]
 ) -> AsicFile:
     file = asic_file_class.from_remote_path(path)
     return file
 
 
 def cast_into_kinds(
-    paths: list[pathlib.PurePosixPath], kinds: dict[FileKind, Type[AsicFile]]
+    paths: list[pathlib.PureWindowsPath], kinds: dict[FileKind, Type[AsicFile]]
 ) -> list[AsicFile]:
     file_list: list[AsicFile] = []
     for p in paths:
@@ -224,7 +224,7 @@ if __name__ == "__main__":
 
     import os
 
-    location = pathlib.PurePosixPath("/UsuariosK/ENBC/Sic/COMERCIA/2022-07/")
+    location = pathlib.PureWindowsPath("/UsuariosK/ENBC/Sic/COMERCIA/2022-07/")
     with ftplib.FTP(
         host=os.environ["ASIC_FTP_HOST"],
         user=os.environ["ASIC_FTP_USER"],

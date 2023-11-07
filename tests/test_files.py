@@ -12,11 +12,11 @@ pytestmark = pytest.mark.parametrize(
 
 
 def test_file_from_remote_path(remote_path, expected):
-    path = pathlib.PurePosixPath(remote_path.lower())
+    path = pathlib.PureWindowsPath(remote_path.lower())
     expected_kind = expected["kind"]
     asic_class = SUPPORTED_FILE_CLASSES[expected_kind]
     file = asic_class.from_remote_path(path)
-    assert file.path == pathlib.PurePosixPath(expected["path"].lower())
+    assert file.path == pathlib.PureWindowsPath(expected["path"].lower())
     assert file.kind == expected_kind
     assert file.visibility.value == expected["visibility"]
     assert file.year == expected["year"]

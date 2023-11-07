@@ -158,7 +158,7 @@ if __name__ == "__main__":
     path = pathlib.Path(
         "./borrar/informacion_xm/UsuariosK/enbc/SIC/COMERCIA/2023-10/aenc1001.Tx2"
     )
-    purepath = pathlib.PurePosixPath("/") / pathlib.PurePosixPath(
+    purepath = pathlib.PureWindowsPath("/") / pathlib.PureWindowsPath(
         path.as_posix()
     ).relative_to("./borrar")
     file = AENC.from_remote_path(purepath)
