@@ -16,7 +16,7 @@ TESTFILES = pytest.mark.datafiles(
 
 ALL_FILES = {
     "adem": {
-        "path": "/informacion_xm/PublicoK/SIC/COMERCIA/2023-10/adem1001.Tx2",
+        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/adem1001.Tx2",
         "kind": "adem",
         "visibility": "public",
         "year": 2023,
@@ -27,7 +27,7 @@ ALL_FILES = {
         "agent": None,
     },
     "aenc": {
-        "path": "/informacion_xm/usuariosk/xxxc/sic/comercia/2023-10/AENC1001.tx2",
+        "path": "/INFORMACION_XM/USUARIOSK/XXXC/SIC/COMERCIA/2023-10/aenc1001.tx2",
         "kind": "aenc",
         "visibility": "agent",
         "year": 2023,
@@ -38,7 +38,7 @@ ALL_FILES = {
         "agent": "xxxc",
     },
     "balcttos": {
-        "path": "/informacion_xm/usuariosk/xxxc/sic/comercia/2023-10/BalCttos1001.tx2",
+        "path": "/INFORMACION_XM/USUARIOSK/XXXC/SIC/COMERCIA/2023-10/BalCttos1001.tx2",
         "kind": "balcttos",
         "visibility": "agent",
         "year": 2023,
