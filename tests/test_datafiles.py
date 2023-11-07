@@ -1,6 +1,6 @@
 import pathlib
 
-from conftest import TESTFILES
+from .conftest import TESTFILES
 
 
 @TESTFILES
