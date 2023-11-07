@@ -1,7 +1,9 @@
-"""Example: re-use file selection.
+"""Define test data files.
 
-If all (or many) of your tests rely on the same files it can be easier to
-define one decorator beforehand and apply it to every test.
+**DO NOT PUT PRIVATE AGENTE DATA HERE!!!**
+Use the generic agents XXXC, XXXG, XXXD or XXXT for agent (private) test files.
+
+Make sure that the path casing (UPPERCASE, lowerase, etc) is as the local file system.
 """
 import pathlib
 
