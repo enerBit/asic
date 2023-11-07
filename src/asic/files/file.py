@@ -234,6 +234,7 @@ class AsicFile(ABC):
             agent = match_groups.get("location_agent", None)
             if agent is None:
                 agent = match_groups["name_agent"]
+            agent = agent.lower()
         else:
             agent = None
         return AsicFileMetadataInput(
