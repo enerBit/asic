@@ -7,7 +7,7 @@ import pathlib
 
 import pytest
 
-FIXTURE_DIR = pathlib.Path(__file__).parent.resolve() / "informacion_xm"
+FIXTURE_DIR = pathlib.Path(__file__).parent.resolve() / "INFORMACION_XM"
 
 TESTFILES = pytest.mark.datafiles(
     FIXTURE_DIR,
