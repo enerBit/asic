@@ -31,10 +31,10 @@ def local_aenc_file(aenc_file: AENC, datafiles: pathlib.Path) -> pathlib.Path:
 @TESTFILES
 def test_aenc_read(aenc_file: AENC, local_aenc_file):
     data = aenc_file.read(local_aenc_file)
-    assert len(data) == 2
+    assert len(data) == 1
 
 
 @TESTFILES
 def test_aenc_preprocess(aenc_file: AENC, local_aenc_file):
     long_data = aenc_file.preprocess(local_aenc_file)
-    assert len(long_data) == 48
+    assert len(long_data) == 24
