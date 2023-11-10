@@ -2,9 +2,10 @@ name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
 
 on:
   push:
-    # Pattern matched against refs/tags
-    tags:        
-      - '**'           # Push events to every tag including hierarchical tags like v1.0/beta
+    branches:
+      - "main"
+    tags:
+      - "**" # Push events to every tag including hierarchical tags like v1.0/beta
 
 jobs:
   build-n-publish:
