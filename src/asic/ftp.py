@@ -4,12 +4,13 @@ import functools
 import itertools
 import logging
 import pathlib
-import re
-from typing import Iterable
+from typing import Iterable, Type
 
 import pydantic
 
-from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
+from asic import ASIC_FILE_EXTENSION_MAP
+from asic.files.definitions import SUPPORTED_FILE_CLASSES
+from asic.files.file import AsicFile, FileKind
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ SUPPORTED_ASIC_EXTENSIONS = frozenset(ASIC_FILE_EXTENSION_MAP.keys())
 
 
 class DownloadSpec(pydantic.BaseModel):
-    remote: pathlib.PurePosixPath
+    remote: pathlib.PureWindowsPath
     local: pathlib.Path
 
     class Config:
@@ -27,7 +28,7 @@ class DownloadSpec(pydantic.BaseModel):
 def get_ftps(
     ftps_host: str,
     ftps_user: str,
-    ftps_password: str,
+    ftps_password: pydantic.SecretStr,
     ftps_port: int,
 ):
     ftps = ftplib.FTP_TLS(
@@ -51,7 +52,7 @@ def grab_file(ftp: ftplib.FTP, remote: pathlib.PurePath, local: pathlib.Path):
     with open(local, "wb") as dst:
         try:
             ftp.retrbinary("RETR " + str(remote), dst.write)
-        except:
+        except ftplib.error_reply:
             logger.exception(f"Failed to download file '{str(remote)}'")
 
 
@@ -66,12 +67,12 @@ def get_path_version(path: pathlib.PurePath) -> str:
 
 
 @functools.cache
-def list_files_in_location(
+def list_paths_in_location(
     ftp: ftplib.FTP,
     location: str,
-) -> list[pathlib.PurePath]:
+) -> list[pathlib.PureWindowsPath]:
     ftp.cwd(location)
-    location_path = pathlib.PurePath(location)
+    location_path = pathlib.PureWindowsPath(location)
     logger.debug(f"Listing files in location {location}")
     files_in_location = ftp.nlst()
     logger.debug(f"Total files found in location {len(files_in_location)}")
@@ -80,36 +81,28 @@ def list_files_in_location(
     return paths_in_location
 
 
-def fiter_files_by_pattern(
-    file_list: list[pathlib.PurePath], name_pattern: str
-) -> list[pathlib.PurePath]:
-    reo = re.compile(name_pattern)
-    filtered = [f for f in file_list if reo.search(str(f.name))]
-    filtered = []
-    for f in file_list:
-        match = reo.search(str(f.name))
-        if match:
-            filtered.append(f)
-    return filtered
-
-
 def fiter_files_by_date_range(
-    file_list: list[pathlib.PurePath], name_pattern: str, since: dt.date, until: dt.date
-) -> list[pathlib.PurePath]:
-    reo = re.compile(name_pattern)
-    today = dt.date.today()
-    filtered: list[pathlib.PurePath] = []
+    file_list: list[AsicFile],
+    since: dt.date,
+    until: dt.date,
+) -> list[AsicFile]:
+    filtered: list[AsicFile] = []
     for f in file_list:
-        match = reo.search(str(f.name))
-        (f_day, f_month) = match.group("name_day", "name_month")
-        try:
-            f_year = match.group("name_year")
-        except IndexError:
-            f_year = today.year
-        f_date = dt.date(int(f_year), int(f_month), int(f_day))
+        f_day = f.day if f.day is not None else 1
+        f_date = dt.date(f.year, f.month, f_day)
         if since <= f_date <= until:
             filtered.append(f)
 
+    return filtered
+
+
+def fiter_files_by_extension(
+    file_list: list[AsicFile],
+    extension: str,
+) -> list[AsicFile]:
+    filtered: list[AsicFile] = [
+        f for f in file_list if f.extension == extension or f.extension is None
+    ]
     return filtered
 
 
@@ -119,9 +112,10 @@ def list_supported_files(
     agent: str | None = None,
     months: list[dt.date],
     extensions: list[str],
-    files: list[str],
+    kinds: list[str],
     locations: list[str],
-) -> list[pathlib.PurePath]:
+) -> list[AsicFile]:
+    logger.info("Listing files")
     file_list = []
     for month, l_template, ext in itertools.product(
         months,
@@ -130,19 +124,48 @@ def list_supported_files(
     ):
         try:
             remote_location = l_template.format(
-                location_year=month.year, location_month=month.month, agent=agent
+                location_year=month.year,
+                location_month=month.month,
+                location_agent=agent,
             )
         except Exception:
-            logger.debug(
+            logger.warning(
                 f"Failed to build remote location with {l_template}, {month, agent}"
             )
             continue
         logger.debug(f"Listing remote location: {remote_location}")
         files_in_location = list_supported_files_in_location(
-            ftp, remote_location, month, files, ext
+            ftp, remote_location, month, kinds, ext
         )
         file_list.extend(files_in_location)
 
+    return file_list
+
+
+def path_to_asic_file(
+    path: pathlib.PureWindowsPath, asic_file_class: Type[AsicFile]
+) -> AsicFile:
+    file = asic_file_class.from_remote_path(path)
+    return file
+
+
+def cast_into_kinds(
+    paths: list[pathlib.PureWindowsPath], kinds: dict[FileKind, Type[AsicFile]]
+) -> list[AsicFile]:
+    file_list: list[AsicFile] = []
+    for p in paths:
+        for k, c in kinds.items():
+            logger.debug(f"Trying kind '{k}' for {p}")
+            try:
+                file = path_to_asic_file(p, c)
+                logger.debug(f"Found kind '{k}' for {p}")
+                file_list.append(file)
+                break
+            except ValueError:
+                logger.debug(f"Failed kind '{k}' for {p}")
+                continue
+        else:
+            logger.debug(f"Failed to match a kind to {p} in {kinds.keys()}")
     return file_list
 
 
@@ -150,37 +173,33 @@ def list_supported_files_in_location(
     ftp: ftplib.FTP,
     location: str,
     month: dt.date,
-    file_codes: list[str],
+    kinds: list[str],
     extension: str,
-) -> list[pathlib.PurePath]:
-    files = list_files_in_location(ftp, location)
-    logger.debug(f"Total files in location {location}")
+) -> list[AsicFile]:
+    remote_paths = list_paths_in_location(ftp, location)
+    logger.debug(f"Total files in location {len(remote_paths)}")
+    asic_file_kinds_requested = {
+        k: c for k, c in SUPPORTED_FILE_CLASSES.items() if k in kinds
+    }
+    logger.debug(f"Checking for {len(asic_file_kinds_requested)} kinds")
+    remote_files = cast_into_kinds(remote_paths, asic_file_kinds_requested)
+    logger.debug(f"Kept {len(remote_files)} AsicFiles by kind")
+
     since = month
     until = (month.replace(day=1) + dt.timedelta(days=31)).replace(
         day=1
     ) - dt.timedelta(days=1)
 
-    patterns = [c.name_pattern for f, c in ASIC_FILE_CONFIG.items() if f in file_codes]
+    remote_files = fiter_files_by_date_range(remote_files, since, until)
+    logger.debug(f"Kept {len(remote_files)} AsicFiles by date filter")
 
     if extension is not None:
-        patterns = [combine_patterns_and_extension(p, extension) for p in patterns]
+        logger.debug(f"Filtering by ex {len(remote_files)} files")
+        remote_files = fiter_files_by_extension(remote_files, extension)
+        logger.debug(f"Kept {len(remote_files)} AsicFiles by date filter")
 
-    logger.debug(f"Patterns to filter by: {patterns}")
-
-    supported_files_in_location = []
-    for p in patterns:
-        logger.debug(f"Filtering {len(files)} by pattern {p}")
-        new_files = fiter_files_by_pattern(files, p)
-        new_files = fiter_files_by_date_range(
-            new_files,
-            p,
-            since,
-            until,
-        )
-        logger.debug(f"Kept {len(new_files)} files")
-        supported_files_in_location.extend(new_files)
-    logger.info(f"Total files kept {len(supported_files_in_location)}")
-    return supported_files_in_location
+    logger.debug(f"Total files kept {len(remote_files)}")
+    return remote_files
 
 
 def combine_patterns_and_extension(pattern: str, extension: str) -> str:
@@ -205,12 +224,12 @@ if __name__ == "__main__":
 
     import os
 
-    location = pathlib.PurePosixPath("/UsuariosK/ENBC/Sic/COMERCIA/2022-07/")
+    location = pathlib.PureWindowsPath("/UsuariosK/ENBC/Sic/COMERCIA/2022-07/")
     with ftplib.FTP(
         host=os.environ["ASIC_FTP_HOST"],
         user=os.environ["ASIC_FTP_USER"],
         passwd=os.environ["ASIC_FTP_PASSWORD"],
     ) as ftp_aux:
-        files = list_files_in_location(ftp_aux, str(location))
+        files = list_paths_in_location(ftp_aux, str(location))
         for f in files:
             print(f)

@@ -2,16 +2,17 @@ import datetime as dt
 import logging
 import os
 import pathlib
-from ssl import SSLZeroReturnError
 from typing import Optional
 
 import pydantic
+import rich
+import rich.logging
+import rich.progress
 import typer
-from rich.progress import track
 
 from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 from asic.config import ASICFileVisibility
-from asic.files import SupportedFiles
+from asic.files.definitions import SUPPORTED_FILE_CLASSES
 from asic.ftp import (
     get_ftps,
     grab_file,  # list_supported_files_in_location,
@@ -20,24 +21,24 @@ from asic.ftp import (
 from asic.publication import list_latest_published_versions
 
 logger = logging.getLogger("asic")
-logger.addHandler(logging.StreamHandler())
+logger.addHandler(rich.logging.RichHandler())
 
 YEAR_MONTH_FORMATS = ["%Y-%m", "%Y%m"]
 YEAR_MONTH_MATCH_ERROR_MESSAGE = f"Must match one of: {YEAR_MONTH_FORMATS}"
-SUPPORTED_FILES = sorted([f.value.lower() for f in SupportedFiles])
-SUPPORTED_FILES_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_FILES}"
+SUPPORTED_FILE_KINDS = sorted([k.lower() for k in SUPPORTED_FILE_CLASSES])
+SUPPORTED_FILE_KINDS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_FILE_KINDS}"
 SUPPORTED_EXTENSIONS = [e.lower() for e in ASIC_FILE_EXTENSION_MAP.keys()]
-SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_EXTENSIONS}"
+SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"""Must match one of: ['{"', '".join(SUPPORTED_EXTENSIONS[:6])}', ..., '{"', '".join(SUPPORTED_EXTENSIONS[-2:])}']"""
 PUBLIC_SEARCHEABLE_LOCATIONS = set(
     [
-        c.location_pattern.encode("unicode-escape").decode().lower()
+        c.location_template.encode("unicode-escape").decode().lower()
         for f, c in ASIC_FILE_CONFIG.items()
         if c.visibility == ASICFileVisibility.PUBLIC
     ]
 )
 PRIVATE_SEARCHEABLE_LOCATIONS = set(
     [
-        c.location_pattern.encode("unicode-escape").decode().lower()
+        c.location_template.encode("unicode-escape").decode().lower()
         for f, c in ASIC_FILE_CONFIG.items()
         if c.visibility == ASICFileVisibility.AGENT
     ]
@@ -56,7 +57,7 @@ def main(
     ftps_password: str = typer.Option(..., envvar="ASIC_FTPS_PASSWORD", prompt=True),
 ):
     """
-    FTP authentication info should be  provided as environment variables (ASIC_FTP_*)
+    FTP authentication info should be provided as environment variables (ASIC_FTP_*)
     """
     logger.info(f"Verbosity level {verbosity}")
     match verbosity:
@@ -77,6 +78,19 @@ def main(
     ctx.meta["ASIC_FTPS_PASSWORD"] = pydantic.SecretStr(ftps_password)
 
 
+def validate_month(month: str) -> str:
+    for f in YEAR_MONTH_FORMATS:
+        try:
+            _value = dt.datetime.strptime(month, f).date()
+            break
+        except ValueError:
+            continue
+    else:
+        raise typer.BadParameter(YEAR_MONTH_MATCH_ERROR_MESSAGE)
+
+    return month
+
+
 def parse_month(month: str) -> dt.date:
     for f in YEAR_MONTH_FORMATS:
         try:
@@ -85,15 +99,15 @@ def parse_month(month: str) -> dt.date:
         except ValueError:
             continue
     else:
-        raise typer.BadParameter(YEAR_MONTH_MATCH_ERROR_MESSAGE)
+        raise ValueError(f"Failed to parse {month} as date")
 
     return value
 
 
-def validate_file(file_code: str) -> str:
-    if file_code.lower() not in SUPPORTED_FILES:
-        raise typer.BadParameter(SUPPORTED_FILES_ERROR_MESSAGE)
-    return file_code
+def validate_file_kind(file_kind: str) -> str:
+    if file_kind.lower() not in SUPPORTED_FILE_KINDS:
+        raise typer.BadParameter(SUPPORTED_FILE_KINDS_ERROR_MESSAGE)
+    return file_kind
 
 
 def validate_version(version: str) -> str:
@@ -102,14 +116,14 @@ def validate_version(version: str) -> str:
     return version
 
 
-def months_callback(values: list[str]) -> list[dt.date]:
-    months = sorted(list(set([parse_month(v) for v in values])), reverse=True)
+def months_callback(values: list[str]) -> list[str]:
+    months = sorted(list(set([validate_month(v) for v in values])), reverse=True)
     return months
 
 
-def files_callback(values: list[str]) -> list[str]:
+def file_kinds_callback(values: list[str]) -> list[str]:
     files = sorted(
-        list(set([validate_file(v) for v in values])),
+        list(set([validate_file_kind(v) for v in values])),
         reverse=True,
     )
 
@@ -162,8 +176,11 @@ def list_files(
     agent: Optional[str] = typer.Option(
         None, help="Agent's asic code, required for private files"
     ),
-    files: Optional[list[str]] = typer.Option(
-        None, "--file", callback=files_callback, help=SUPPORTED_FILES_ERROR_MESSAGE
+    kinds: Optional[list[str]] = typer.Option(
+        None,
+        "--kind",
+        callback=file_kinds_callback,
+        help=SUPPORTED_FILE_KINDS_ERROR_MESSAGE,
     ),
     extensions: Optional[list[str]] = typer.Option(
         None,
@@ -181,14 +198,14 @@ def list_files(
     """
     List files from asic's ftp server.
 
-    FTP authentication info should be  provided as environment variables (ASIC_FTP_*)
+    FTP authentication info should be provided as environment variables (ASIC_FTP_*)
     """
     logger.info(
         "Listing files for"
         f" agent: {agent}"
         f" months: {months}"
         f" extensions: {extensions}"
-        f" files: {files}"
+        f" kinds: {kinds}"
     )
     ftps_host = ctx.meta["ASIC_FTPS_HOST"]
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
@@ -196,9 +213,9 @@ def list_files(
     ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
 
     if not extensions:
-        extensions = [None]
-    if not files:
-        files = SUPPORTED_FILES
+        extensions = [None]  # type: ignore
+    if not kinds:
+        kinds = SUPPORTED_FILE_KINDS
 
     locations = PUBLIC_SEARCHEABLE_LOCATIONS
     if agent is not None:
@@ -210,25 +227,28 @@ def list_files(
         ftps_password=ftps_password,
         ftps_port=ftps_port,
     )
-
+    month_dates = [parse_month(m) for m in months]
     file_list = list_supported_files(
         ftps,
         agent=agent,
-        months=months,
+        months=month_dates,
         extensions=extensions,
-        files=files,
-        locations=locations,
+        kinds=kinds,
+        locations=list(locations),
     )
 
     ftps.quit()
 
     for f in file_list:
-        typer.echo(f)
+        rich.print(f.path)
 
 
 @cli.command()
 def download(
     ctx: typer.Context,
+    is_preprocessing_required: bool = typer.Option(
+        False, "--prepro", help="Preprocess each file after donwload"
+    ),
     months: list[str] = typer.Option(
         ...,
         "--month",
@@ -238,8 +258,11 @@ def download(
     agent: Optional[str] = typer.Option(
         None, help="Agent's asic code, required for private files"
     ),
-    files: Optional[list[str]] = typer.Option(
-        None, "--file", callback=files_callback, help=SUPPORTED_FILES_ERROR_MESSAGE
+    kinds: Optional[list[str]] = typer.Option(
+        None,
+        "--kind",
+        callback=file_kinds_callback,
+        help=SUPPORTED_FILE_KINDS_ERROR_MESSAGE,
     ),
     extensions: Optional[list[str]] = typer.Option(
         None,
@@ -252,12 +275,12 @@ def download(
     """
     Download files from asic's ftp server to local DESTINATION folder.
 
-    FTP authentication info should be  provided as environment variables (ASIC_FTP_*)
+    FTP authentication info should be provided as environment variables (ASIC_FTP_*)
     """
     if not extensions:
-        extensions = [None]
-    if not files:
-        files = SUPPORTED_FILES
+        extensions = [None]  # type: ignore
+    if not kinds:
+        kinds = SUPPORTED_FILE_KINDS
 
     ftps_host = ctx.meta["ASIC_FTPS_HOST"]
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
@@ -274,28 +297,31 @@ def download(
         ftps_password=ftps_password,
         ftps_port=ftps_port,
     )
-
+    month_dates = [parse_month(m) for m in months]
     file_list = list_supported_files(
         ftps,
         agent=agent,
-        months=months,
+        months=month_dates,
         extensions=extensions,
-        files=files,
-        locations=locations,
+        kinds=kinds,
+        locations=list(locations),
     )
 
     logger.info(f"Total files to download: {len(file_list)}")
 
-    for f in track(file_list, description="Dowloading files..."):
+    for f in rich.progress.track(file_list, description="Dowloading files..."):
+        logger.info(f"File: {f.path}")
         remote = f
-        local = destination / str(f)[1:]  # hack to remove root anchor
+        local = destination / str(f.path)[1:]  # hack to remove root anchor
         os.makedirs(local.parent, exist_ok=True)
-        logger.info(f"Downloading {remote} to {local}")
+        logger.debug(f"Downloading {remote} to {local}")
 
         try:
-            grab_file(ftps, remote, local)
+            grab_file(ftps, remote.path, local)
 
-        except SSLZeroReturnError:
+        # except (ssl.SSLZeroReturnError, ssl.SSLEOFError):
+        except Exception:
+            logger.warning("Download failed, retrying connection")
             ftps = get_ftps(
                 ftps_host=ftps_host,
                 ftps_user=ftps_user,
@@ -303,6 +329,13 @@ def download(
                 ftps_port=ftps_port,
             )
 
-            grab_file(ftps, remote, local)
+            grab_file(ftps, remote.path, local)
+
+        if is_preprocessing_required:
+            preprocessed = f.preprocess(local)
+            write_to = local.with_suffix(".csv")
+            preprocessed.to_csv(
+                write_to,
+            )
 
     ftps.quit()
