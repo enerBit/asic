@@ -143,12 +143,15 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         "requests",
+        "types-requests",
         "html5lib",
         "BeautifulSoup4",
         "pytz",
         "pandas",
+        "pandas-stubs",
         "pydantic>=2.0",
         "typer[all]",
+        "types-setuptools",
     ],  # Optional
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
