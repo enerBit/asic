@@ -59,31 +59,31 @@ class ADEM(AsicFile):
     _format = FORMAT
 
     @property
-    def path(self):
+    def path(self) -> pathlib.PureWindowsPath:
         return self._path
 
     @property
-    def year(self):
+    def year(self) -> int:
         return self._year
 
     @property
-    def month(self):
+    def month(self) -> int:
         return self._month
 
     @property
-    def day(self):
+    def day(self) -> int | None:
         return self._day
 
     @property
-    def extension(self):
+    def extension(self) -> str:
         return self._extension
 
     @property
-    def version(self):
+    def version(self) -> str | None:
         return self._version
 
     @property
-    def agent(self):
+    def agent(self) -> str | None:
         return self._agent
 
     def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
