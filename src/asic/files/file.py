@@ -60,19 +60,19 @@ class FileKind(str, enum.Enum):
     ADEM = "adem"
     AENC = "aenc"
     BALCTTOS = "balcttos"
+    PEP = "pep"
+    PME = "PME"
+    TRSD = "trsd"
 
     # TGRL = "tgrl"
     # TRSM = "trsm"
     # LDCBMR = "ldcbmr"
-    # PEP = "pep"
-    # TRSD = "trsd"
     # SNTIE = "sntie"
     # DSPCTTOS = "dspcttos"
     # PUBFC = "pubfc"
     # PUBFC_FALLA_HURTO = "pubfc_falla-hurto"
     # TFROC = "tfroc"
     # CLIQ = "cliq"
-
     # DESBM = "desbm"
     # DESBMEX = "desbmex"
     # OEFAGNCH = "oefagnch"
@@ -85,7 +85,7 @@ class AsicFileMetadataInput(pydantic.BaseModel):
     month: int
     day: int | None = None
     extension: str
-    version: str | None = pydantic.Field(None, pattern=r"^[0-9]{3}$")
+    version: str | None = pydantic.Field(None, pattern=r"^[-]?[0-9]{3}$")
     agent: str | None = pydantic.Field(None, pattern=r"^[a-z]{4}$")
 
 
@@ -155,8 +155,8 @@ class AsicFile(ABC):
         path: pathlib.PureWindowsPath,
         year: int,
         month: int,
+        extension: str,
         day: int | None = None,
-        extension: str | None = None,
         version: str | None = None,
         agent: str | None = None,
     ) -> None:
@@ -164,7 +164,7 @@ class AsicFile(ABC):
         self._year: int = year
         self._month: int = month
         self._day: int | None = day
-        self._extension: str | None = extension
+        self._extension: str = extension
         self._version: str | None = version
         self._agent: str | None = agent
         self.reader = FileReader(self._format)
