@@ -1,5 +1,6 @@
 import logging
-import pathlib
+from io import BytesIO, StringIO
+from pathlib import Path, PureWindowsPath
 
 # Third party imports
 import pandas as pd
@@ -28,7 +29,7 @@ class PME(AsicFile):
     _format = FORMAT
 
     @property
-    def path(self) -> pathlib.PureWindowsPath:
+    def path(self) -> PureWindowsPath:
         return self._path
 
     @property
@@ -55,14 +56,14 @@ class PME(AsicFile):
     def agent(self) -> str | None:
         return self._agent
 
-    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
+    def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
         PME: se publica un archivo mensual.
         versiones: TXA
         AGENTE:
           SISTEMA: el precio de escacez de activación
         """
-        total = self.reader.read(filepath)
+        total = self.read(target)
         total["PERIODO"] = f"{self.year:04d}-{self.month:02d}"
 
         total = total[total["CONCEPTO"].isin(["PE", "PEA", "PME"])]

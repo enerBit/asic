@@ -1,7 +1,8 @@
 import enum
-import pathlib
 import re
 from abc import ABC, abstractmethod
+from io import BytesIO, StringIO
+from pathlib import Path, PureWindowsPath
 
 import pandas as pd
 import pydantic
@@ -90,7 +91,7 @@ class AsicFileMetadataInput(pydantic.BaseModel):
 
 
 class AsicFileMetadata(AsicFileMetadataInput):
-    remote_path: pathlib.PureWindowsPath
+    remote_path: PureWindowsPath
     kind: FileKind
 
 
@@ -108,7 +109,7 @@ class AsicFile(ABC):
 
     @property
     @abstractmethod
-    def path(self) -> pathlib.PureWindowsPath:
+    def path(self) -> PureWindowsPath:
         pass
 
     @property
@@ -142,7 +143,7 @@ class AsicFile(ABC):
         pass
 
     @abstractmethod
-    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
+    def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         pass
 
     @property
@@ -152,7 +153,7 @@ class AsicFile(ABC):
 
     def __init__(
         self,
-        path: pathlib.PureWindowsPath,
+        path: PureWindowsPath,
         year: int,
         month: int,
         extension: str,
@@ -160,7 +161,7 @@ class AsicFile(ABC):
         version: str | None = None,
         agent: str | None = None,
     ) -> None:
-        self._path: pathlib.PureWindowsPath = path
+        self._path: PureWindowsPath = path
         self._year: int = year
         self._month: int = month
         self._day: int | None = day
@@ -171,8 +172,8 @@ class AsicFile(ABC):
         self.name_template = pattern_to_template(self.name_pattern)
         self.location_template = pattern_to_template(self.location_pattern)
 
-    def read(self, local_path: pathlib.Path) -> pd.DataFrame:
-        return self.reader.read(local_path)
+    def read(self, target: str | Path | StringIO | BytesIO) -> pd.DataFrame:
+        return self.reader.read(target)
 
     @property
     def metadata(self) -> AsicFileMetadata:
@@ -188,14 +189,14 @@ class AsicFile(ABC):
         )
 
     @classmethod
-    def from_remote_path(cls, remote_path: pathlib.PureWindowsPath) -> Self:
+    def from_remote_path(cls, remote_path: PureWindowsPath) -> Self:
         path_metadata = cls.extract_metadata_from_remote_path(remote_path)
         file = cls(path=remote_path, **path_metadata.model_dump())
         return file
 
     @classmethod
     def extract_metadata_from_remote_path(
-        cls, file_path: pathlib.PureWindowsPath
+        cls, file_path: PureWindowsPath
     ) -> AsicFileMetadataInput:
         file_path_as_posix = file_path.as_posix()
         path_pattern = cls.location_pattern + cls.name_pattern

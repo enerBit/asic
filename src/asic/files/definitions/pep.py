@@ -1,5 +1,6 @@
 import logging
-import pathlib
+from io import BytesIO, StringIO
+from pathlib import Path, PureWindowsPath
 
 # Third party imports
 import pandas as pd
@@ -28,7 +29,7 @@ class PEP(AsicFile):
     _format = FORMAT
 
     @property
-    def path(self) -> pathlib.PureWindowsPath:
+    def path(self) -> PureWindowsPath:
         return self._path
 
     @property
@@ -55,14 +56,14 @@ class PEP(AsicFile):
     def agent(self) -> str | None:
         return self._agent
 
-    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
+    def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
         pep: se publica un archivo por día.
         versiones: TX1, TX2, TXR y TXF
         AGENTE:
           SISTEMA: el precio de escasez ponderado del sistema
         """
-        total = self.reader.read(filepath)
+        total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
 
         total = total[total["AGENTE"] == "SISTEMA"]

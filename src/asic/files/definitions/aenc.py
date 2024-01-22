@@ -1,5 +1,6 @@
 import logging
-import pathlib
+from io import BytesIO, StringIO
+from pathlib import Path, PureWindowsPath
 
 # Third party imports
 import pandas as pd
@@ -65,7 +66,7 @@ class AENC(AsicFile):
     _format = FORMAT
 
     @property
-    def path(self) -> pathlib.PureWindowsPath:
+    def path(self) -> PureWindowsPath:
         return self._path
 
     @property
@@ -92,13 +93,13 @@ class AENC(AsicFile):
     def agent(self) -> str | None:
         return self._agent
 
-    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
+    def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
         AENC: es un archivo diario
         versiones: TX2, TXR, TXF
         VALOR: energia calculada por ASIC para frontera en cada periodo
         """
-        total = self.reader.read(filepath)
+        total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
         total["AGENTE"] = self.agent
 

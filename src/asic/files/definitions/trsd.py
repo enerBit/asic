@@ -1,5 +1,6 @@
 import logging
-import pathlib
+from io import BytesIO, StringIO
+from pathlib import Path, PureWindowsPath
 
 # Third party imports
 import pandas as pd
@@ -55,7 +56,7 @@ class TRSD(AsicFile):
     _format = FORMAT
 
     @property
-    def path(self) -> pathlib.PureWindowsPath:
+    def path(self) -> PureWindowsPath:
         return self._path
 
     @property
@@ -82,13 +83,13 @@ class TRSD(AsicFile):
     def agent(self) -> str | None:
         return self._agent
 
-    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
+    def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
         trsd: se publica un archivo por día.
         versiones: TX1, TX2, TXR y TXF
         PBNA: Precio de bolsa nacional
         """
-        total = self.reader.read(filepath)
+        total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
         total["FECHA"] = pd.to_datetime(
             total["FECHA"],
