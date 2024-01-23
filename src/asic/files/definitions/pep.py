@@ -66,8 +66,6 @@ class PEP(AsicFile):
         total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
 
-        total = total[total["AGENTE"] == "SISTEMA"]
-
         total["FECHA"] = pd.to_datetime(
             total["FECHA"],
             format="%Y-%m-%d",

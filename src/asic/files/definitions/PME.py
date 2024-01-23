@@ -64,9 +64,7 @@ class PME(AsicFile):
           SISTEMA: el precio de escacez de activación
         """
         total = self.read(target)
-        total["PERIODO"] = f"{self.year:04d}-{self.month:02d}"
+        total["MES"] = f"{self.year:04d}-{self.month:02d}"
 
-        total = total[total["CONCEPTO"].isin(["PE", "PEA", "PME"])]
-
-        return_cols = ["PERIODO", "CONCEPTO", "DESCRIPCION", "VALOR"]
+        return_cols = ["MES", "CONCEPTO", "DESCRIPCION", "VALOR"]
         return total[return_cols]
