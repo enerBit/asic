@@ -329,8 +329,18 @@ def download(
             grab_file(ftps, remote.path, local)
 
         if is_preprocessing_required:
+            file_path_elements = str(f.path)[1:].split("\\")
+            file_path_elements.insert(
+                -1,
+                f.metadata.version
+                if f.metadata.version is not None
+                else f.metadata.extension,
+            )
+
+            file_path = destination / "\\".join(file_path_elements)
+
             preprocessed = f.preprocess(local)
-            write_to = local.with_suffix(".csv")
+            write_to = file_path.with_suffix(".csv")
             preprocessed.to_csv(
                 write_to,
             )
