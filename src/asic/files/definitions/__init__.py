@@ -4,7 +4,7 @@ from asic.files.definitions.adem import ADEM
 from asic.files.definitions.aenc import AENC
 from asic.files.definitions.balcttos import BALCTTOS
 from asic.files.definitions.pep import PEP
-from asic.files.definitions.PME import PME
+from asic.files.definitions.pme import PME
 from asic.files.definitions.trsd import TRSD
 from asic.files.file import AsicFile, FileKind
 
