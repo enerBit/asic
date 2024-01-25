@@ -1,0 +1,60 @@
+CONCEPTO;DESCRIPCION;VALOR
+ACPM;Heat Rate Reportado Por La Planta TDR1 ;10.4674
+ACPM;Heat Rate Reportado Por La Planta TEC1 ;7.1852
+ACPM;Heat Rate Reportado Por La Planta TRN1 ;8.45
+ACPM;Heat Rate Reportado Por La Planta TSR1 ;7.1417
+ACPM;Heat Rate Reportado Por La Planta TVL1 ;6.5573
+CARB;Heat Rate Reportado Por La Planta GE32 ;9
+CARB;Heat Rate Reportado Por La Planta GEC3 ;10.15
+CARB;Heat Rate Reportado Por La Planta PPA1 ;12.4335
+CARB;Heat Rate Reportado Por La Planta PPA2 ;10.5569
+CARB;Heat Rate Reportado Por La Planta PPA3 ;10.4642
+CARB;Heat Rate Reportado Por La Planta PPA4 ;8.6485
+CARB;Heat Rate Reportado Por La Planta TGJ1 ;10
+CARB;Heat Rate Reportado Por La Planta TGJ2 ;9.8
+CARB;Heat Rate Reportado Por La Planta TSJ1 ;9.2374
+CARB;Heat Rate Reportado Por La Planta TSJ2 ;10.1502
+CARB;Heat Rate Reportado Por La Planta ZPA2 ;11.4401
+CARB;Heat Rate Reportado Por La Planta ZPA3 ;11.7024
+CARB;Heat Rate Reportado Por La Planta ZPA4 ;12.9999
+CARB;Heat Rate Reportado Por La Planta ZPA5 ;12.6678
+CRUD;Heat Rate Reportado Por La Planta JAG1 ;8.0091
+CRUD;Heat Rate Reportado Por La Planta RUB1 ;8.0091
+FOIL;Heat Rate Reportado Por La Planta CTG1 ;13.665
+FOIL;Heat Rate Reportado Por La Planta CTG2 ;11.5167
+FOIL;Heat Rate Reportado Por La Planta CTG3 ;13.8215
+GANI;Heat Rate Reportado Por La Planta TBQ3 ;10.4846
+GANI;Heat Rate Reportado Por La Planta TBQ4 ;11.6696
+GANI;Heat Rate Reportado Por La Planta TBST ;7.1898
+GANI;Heat Rate Reportado Por La Planta TCD1 ;10.2925
+GANI;Heat Rate Reportado Por La Planta TCD2 ;10.0884
+GANI;Heat Rate Reportado Por La Planta TCDT ;6.685
+GANI;Heat Rate Reportado Por La Planta TFL1 ;7.267
+GANI;Heat Rate Reportado Por La Planta TFL4 ;7.0066
+GASN;Heat Rate Reportado Por La Planta 3ENA ;7.5166
+GASN;Heat Rate Reportado Por La Planta MRL1 ;9.0003
+GASN;Heat Rate Reportado Por La Planta PRG1 ;8.1666
+GASN;Heat Rate Reportado Por La Planta TRM1 ;7.6331
+GASN;Heat Rate Reportado Por La Planta TSR1 ;6.7852
+GASN;Heat Rate Reportado Por La Planta TYP1 ;13.5516
+GASN;Heat Rate Reportado Por La Planta TYP2 ;12.0234
+GASN;Heat Rate Reportado Por La Planta TYP3 ;8.4932
+GASN;Heat Rate Reportado Por La Planta TYP4 ;8.3937
+GASN;Heat Rate Reportado Por La Planta TYP5 ;8.0585
+GSLP;Heat Rate Reportado Por La Planta TCBE ;8.42
+MDMA;Heat Rate Reportado Por La Planta TRN1 ;8.45
+PE;Precio Escasez ;778.9951119672
+PEA;PRECIO ESCASEZ DE ACTIVACIÓN ;1144.04343630868563442014268458332081211
+PME;PRECIO MARGINAL DE ESCASEZ ;1144.04343630868563442014268458332081211
+SISTEMA;Costo De Operacion Y Mantenimiento CARB ;32.3404903661
+SISTEMA;Costo De Operacion Y Mantenimiento GASN ;15.7732519268
+SISTEMA;Costo De Operacion Y Mantenimiento OTRO ;24.0588429672
+SISTEMA;Costo Referencia Por Tipo Combustible [$/Mbtu] ACPM ;143684.030498323
+SISTEMA;Costo Referencia Por Tipo Combustible [$/Mbtu] CARB ;15360.5684598475985294117647058823529412
+SISTEMA;Costo Referencia Por Tipo Combustible [$/Mbtu] CRUD ;52300.541045
+SISTEMA;Costo Referencia Por Tipo Combustible [$/Mbtu] FOIL ;75739
+SISTEMA;Costo Referencia Por Tipo Combustible [$/Mbtu] GANI ;68439.8971085714285714285714285714285714
+SISTEMA;Costo Referencia Por Tipo Combustible [$/Mbtu] GASN ;44722.0125687006
+SISTEMA;Costo Referencia Por Tipo Combustible [$/Mbtu] GSLP ;.00002
+SISTEMA;Otros Costos Variables Hidráulicos ;90.7265974049352148201426845833208121139
+SISTEMA;Otros Costos Variables Termicos ;87.5860974049352148201426845833208121139

@@ -1,7 +1,4 @@
-from .config import (
-    load_asic_file_config,
-    load_asic_file_extension_map,
-)
+from .config import load_asic_file_config, load_asic_file_extension_map
 
 ASIC_FILE_CONFIG = load_asic_file_config()
 ASIC_FILE_EXTENSION_MAP = load_asic_file_extension_map()
