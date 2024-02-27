@@ -1,8 +1,7 @@
 # Standard library imports
 import logging
-from io import StringIO
+from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Union
 
 # Third party imports
 import pandas as pd
@@ -21,7 +20,7 @@ class FileReader:
         logger.debug(f"Creating FileReader with file definition:\n{file_def}")
         self.file_def = file_def
 
-    def read(self, target: Union[str, Path, StringIO]) -> pd.DataFrame:
+    def read(self, target: str | Path | StringIO | BytesIO) -> pd.DataFrame:
         """Reads DataFrame from target."""
         _def = self.file_def.copy()
         file_type = _def.pop("type", None)
@@ -33,7 +32,6 @@ class FileReader:
             res = pd.read_csv(target, **_def)
 
         elif file_type in ["xls", "xlsx"]:
-            _encoding = _def.pop("encoding")
             if "sheet_name" in _def:
                 res = pd.read_excel(str(target), **_def)
             else:
