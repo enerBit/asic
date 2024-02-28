@@ -101,6 +101,10 @@ La opción `--help` imprime la ayuda de cada comando en la pantalla.
  Check latest published settlements in asic's website.
 ```
 
+### Para tener en cuenta
+
+Tener presente que no se está realizando la verificación de certificados del servidor de XM **neptuno.xm.com.co** al consultar las versiones de liquidación publicadas usando el comando **asic pubs**.
+
 ## Tidy data
 
 Los *datos prolijos* ("tidy data" en inglés) son una forma estándar de relacionar el significado de un conjunto de datos a su estructura.

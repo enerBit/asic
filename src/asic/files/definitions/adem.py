@@ -1,5 +1,6 @@
 import logging
-import pathlib
+from io import BytesIO, StringIO
+from pathlib import Path, PureWindowsPath
 
 import numpy as np
 
@@ -59,34 +60,34 @@ class ADEM(AsicFile):
     _format = FORMAT
 
     @property
-    def path(self):
+    def path(self) -> PureWindowsPath:
         return self._path
 
     @property
-    def year(self):
+    def year(self) -> int:
         return self._year
 
     @property
-    def month(self):
+    def month(self) -> int:
         return self._month
 
     @property
-    def day(self):
+    def day(self) -> int | None:
         return self._day
 
     @property
-    def extension(self):
+    def extension(self) -> str:
         return self._extension
 
     @property
-    def version(self):
+    def version(self) -> str | None:
         return self._version
 
     @property
-    def agent(self):
+    def agent(self) -> str | None:
         return self._agent
 
-    def preprocess(self, filepath: pathlib.Path) -> pd.DataFrame:
+    def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
         ADEM: es un archivo diario
         versiones: TX2, TXR, TXF
@@ -96,7 +97,7 @@ class ADEM(AsicFile):
         DMRE: demanda regulada
         PRRE: perdidas reguladas
         """
-        total = self.reader.read(filepath)
+        total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
 
         filter = np.full(total.index.shape, True)

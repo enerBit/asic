@@ -5,22 +5,19 @@ from pathlib import Path, PureWindowsPath
 # Third party imports
 import pandas as pd
 
+# Local application imports
 from asic.files.file import AsicFile, FileKind, VisibilityEnum
 
 logger = logging.getLogger(__name__)
+
 FORMAT = {
     "type": "csv",
     "sep": ";",
     "encoding": "cp1252",
     "dt_fields": {},
     "dtype": {
-        "CONCEPTO": str,
-        "MERCADO": str,
-        "CÓDIGO CONTRATO": str,
-        "COMPRADOR": str,
-        "VENDEDOR": str,
-        "TIPO DE DESPACHO": str,
-        "TIPO ASIGNA": str,
+        "CODIGO": str,
+        "CONTENIDO": str,
         "HORA 01": float,
         "HORA 02": float,
         "HORA 03": float,
@@ -49,12 +46,12 @@ FORMAT = {
 }
 
 
-class BALCTTOS(AsicFile):
-    kind = FileKind.BALCTTOS
-    visibility = VisibilityEnum.AGENT
-    name_pattern = "(?P<kind>BalCttos)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
-    location_pattern = "/informacion_xm/USUARIOSK/(?P<location_agent>[a-zA-Z]{4})/SIC/COMERCIA/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
-    description = "Los archivos de despacho de demanda por mercados R y NR, Nacional, TIE e Internacional"
+class TRSD(AsicFile):
+    kind = FileKind.TRSD
+    visibility = VisibilityEnum.PUBLIC
+    name_pattern = "(?P<kind>trsd)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    location_pattern = "/informacion_xm/publicok/sic/comercia/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
+    description = ""  # TODO
 
     _format = FORMAT
 
@@ -88,51 +85,22 @@ class BALCTTOS(AsicFile):
 
     def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
-        balcttos: se publica un archivo por día.
-        versiones: TX2, TXR y TXF
-        CONCEPTO:
-        EBRC: Energía en bolsa regulada a cargo, en kWh.
-        EBOC: Energía en bolsa no regulada a cargo, en kWh.
-        AGENTE:
-        EPSC: Código SIC del agente comercializador
+        trsd: se publica un archivo por día.
+        versiones: TX1, TX2, TXR y TXF
+        PBNA: Precio de bolsa nacional
         """
         total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
-
         total["FECHA"] = pd.to_datetime(
             total["FECHA"],
             format="%Y-%m-%d",
         )
-        total = (
-            total.set_index(
-                [
-                    "FECHA",
-                    "CONCEPTO",
-                    "MERCADO",
-                    "CÓDIGO CONTRATO",
-                    "COMPRADOR",
-                    "VENDEDOR",
-                    "TIPO DE DESPACHO",
-                    "TIPO ASIGNA",
-                ]
-            )
-            .stack()
-            .reset_index()
-        )
-        total = total.rename(columns={"level_8": "NOMBRE HORA", 0: "VALOR"})
+        total = total.set_index(["CODIGO", "CONTENIDO", "FECHA"]).stack().reset_index()
+        total = total.rename(columns={"level_3": "NOMBRE HORA", 0: "PRECIO"})
         total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
         total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
         total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
         total["HORA"] = total["FECHA_HORA"].dt.strftime("%H:%M:%S")
-        ret_cols = [
-            "FECHA_HORA",
-            "CONCEPTO",
-            "MERCADO",
-            "CÓDIGO CONTRATO",
-            "COMPRADOR",
-            "VENDEDOR",
-            "TIPO DE DESPACHO",
-            "TIPO ASIGNA",
-            "VALOR",
-        ]
+        total["FECHA"] = total["FECHA"].dt.date
+        ret_cols = ["FECHA_HORA", "CODIGO", "CONTENIDO", "PRECIO"]
         return total[ret_cols]

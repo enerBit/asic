@@ -24,7 +24,7 @@ LOCAL_LOCATION_REGEX = re.compile(
 
 class ASICExtesionMap(BaseModel):
     asic_extension: Annotated[str, StringConstraints(pattern=r"^\.[a-zA-Z0-9]*$")]
-    normalized_version: Annotated[str, StringConstraints(pattern=r"^[0-9]{3}$")]
+    normalized_version: Annotated[str, StringConstraints(pattern=r"^[-]?[0-9]{3}$")]
     order: int
 
 
@@ -88,7 +88,7 @@ def pattern_to_template_replacement(match_object: re.Match) -> str:
 
 
 def pattern_to_template(patt: str) -> str:
-    matches = PATTERN_REGEX.findall(patt)
+    PATTERN_REGEX.findall(patt)
     template = PATTERN_REGEX.sub(pattern_to_template_replacement, patt)
     return template
 

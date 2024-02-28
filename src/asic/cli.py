@@ -13,11 +13,8 @@ import typer
 from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 from asic.config import ASICFileVisibility
 from asic.files.definitions import SUPPORTED_FILE_CLASSES
-from asic.ftp import (
-    get_ftps,
-    grab_file,  # list_supported_files_in_location,
-    list_supported_files,
-)
+from asic.ftp import grab_file  # list_supported_files_in_location,
+from asic.ftp import get_ftps, list_supported_files
 from asic.publication import list_latest_published_versions
 
 logger = logging.getLogger("asic")
@@ -81,7 +78,7 @@ def main(
 def validate_month(month: str) -> str:
     for f in YEAR_MONTH_FORMATS:
         try:
-            _value = dt.datetime.strptime(month, f).date()
+            dt.datetime.strptime(month, f).date()
             break
         except ValueError:
             continue
@@ -332,8 +329,20 @@ def download(
             grab_file(ftps, remote.path, local)
 
         if is_preprocessing_required:
+            normalized_version = (
+                f.metadata.version
+                if f.metadata.version is not None
+                else f.metadata.extension
+            )
+            subpath_str = str(f.path)[1:].replace(
+                f"{f.year:04d}-{f.month:02d}",
+                f"{f.year:04d}-{f.month:02d}\\{normalized_version}",
+            )
+
+            preprocessed_path = destination.joinpath(subpath_str)
+
             preprocessed = f.preprocess(local)
-            write_to = local.with_suffix(".csv")
+            write_to = preprocessed_path.with_suffix(".csv")
             preprocessed.to_csv(
                 write_to,
             )
