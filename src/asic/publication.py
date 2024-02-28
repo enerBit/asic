@@ -27,7 +27,7 @@ USER_AGENT = (
     "Chrome/80.0.3987.149 Safari/537.36"
 )
 ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE: dict[str, typing.Any] = {
-    "url": "http://sv01.xm.com.co/gmem/Admon_Mcdo/Liquidacion/versionesliq.htm",
+    "url": "https://neptuno.xm.com.co/Admon_Mcdo/Liquidacion/versionesliq.htm",
     "table-index": 1,
     "encoding": "cp1252",
     "month_settlement_format": r"%b %Y",
@@ -70,7 +70,7 @@ def get_monthly_pubs_table() -> pd.DataFrame:
     table_index: int = ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE["table-index"]
 
     logger.debug(f"Getting content from '{url}'")
-    res = requests.get(url, headers=headers)
+    res = requests.get(url, headers=headers, verify=False)
     res.raise_for_status()
 
     html_text = typing.cast(str, res.content)
