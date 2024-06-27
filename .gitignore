@@ -1,6 +1,10 @@
 *.env
 .vscode/
 
+# ASIC Files and preprocess files
+*.tx*
+*.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

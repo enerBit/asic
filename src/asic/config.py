@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from typing import Annotated
 
-import pkg_resources
+from importlib.resources import files
 from pydantic import BaseModel, StringConstraints
 
 LOCAL_LOCATION_TEMPLATE = "{remote_parent}/{normalized_version}/{remote_name}"
@@ -97,10 +97,12 @@ def load_asic_file_extension_map() -> dict[str, ASICExtesionMap]:
     """Return a list of ASIC extension maps"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
-    stream = pkg_resources.resource_stream("asic", "data/ASIC_FILE_EXTENSION_MAP.jsonl")
+    file_path = files("asic") / "data" / "ASIC_FILE_EXTENSION_MAP.jsonl"
     lines = []
-    for line in stream:
-        lines.append(json.loads(line))
+
+    with file_path.open('rb') as stream:
+        for line in stream:
+            lines.append(json.loads(line))
 
     asic_file_extension_mapper = {
         line["asic_extension"]: ASICExtesionMap.model_validate(line) for line in lines
@@ -112,10 +114,13 @@ def load_asic_file_config() -> dict[str, ASICFileConfig]:
     """Return a list of ASIC file configurations"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
-    stream = pkg_resources.resource_stream("asic", "data/ASIC_FILE_CONFIG.jsonl")
+    file_path = files("asic") / "data" / "ASIC_FILE_CONFIG.jsonl"
     lines = []
-    for line in stream:
-        lines.append(json.loads(line))
+
+    with file_path.open('rb') as stream:
+        for line in stream:
+            lines.append(json.loads(line))
+
 
     asic_file_config_definition = {
         line["code"]: ASICFileConfigDefinition.model_validate(line) for line in lines
