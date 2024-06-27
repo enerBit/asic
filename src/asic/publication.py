@@ -1,9 +1,12 @@
+import asyncio
 import datetime as dt
 import logging
 import typing
+from io import StringIO
 
 import pandas as pd
 import pydantic
+import aiohttp
 import requests
 
 from asic import ASIC_FILE_EXTENSION_MAP
@@ -63,19 +66,20 @@ def get_daily_versions() -> list[ASICVersionPublication]:
     return daily_versions
 
 
-def get_monthly_pubs_table() -> pd.DataFrame:
+async def get_monthly_pubs_table() -> pd.DataFrame:
     headers: dict[str, str] = ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE["headers"]
     url: str = ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE["url"]
     source_encoding: str = ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE["encoding"]
     table_index: int = ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE["table-index"]
 
-    logger.debug(f"Getting content from '{url}'")
-    res = requests.get(url, headers=headers, verify=False)
-    res.raise_for_status()
+    logger.info(f"Getting content from '{url}'")
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as res:
+            res.raise_for_status()
+            html_text = await res.text(encoding=source_encoding)
 
-    html_text = typing.cast(str, res.content)
     logger.debug("Parsing content as HTML table")
-    tables = pd.read_html(html_text, flavor="html5lib", encoding=source_encoding)
+    tables = pd.read_html(StringIO(html_text), flavor="html5lib")
     versions_table = tables[table_index].dropna().T.drop_duplicates().T
     table_headers = versions_table.iloc[0]
     versions_table = pd.DataFrame(versions_table.values[1:], columns=table_headers)
@@ -141,7 +145,7 @@ def prepare_published_versions_to_objects(
 def list_latest_published_versions(
     published_after: dt.datetime | None = None, include_daily: bool = False
 ) -> list[ASICVersionPublication]:
-    versions_table = get_monthly_pubs_table()
+    versions_table = asyncio.run(get_monthly_pubs_table())
     versions = prepare_published_versions_to_objects(versions_table)
     if include_daily:
         daily_versions = get_daily_versions()
