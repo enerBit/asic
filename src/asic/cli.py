@@ -334,6 +334,11 @@ def download(
                 if f.metadata.version is not None
                 else f.metadata.extension
             )
+
+            preprocessed_folder = f"{local.parent}/{normalized_version}"
+            if not os.path.exists(preprocessed_folder):
+                os.makedirs(preprocessed_folder)
+
             subpath_str = str(f.path)[1:].replace(
                 f"{f.year:04d}-{f.month:02d}",
                 f"{f.year:04d}-{f.month:02d}\\{normalized_version}",
