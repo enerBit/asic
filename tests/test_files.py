@@ -1,8 +1,8 @@
 import pathlib
 
 import pytest
-from asic.files.definitions import SUPPORTED_FILE_CLASSES
 
+from asic.files.definitions import SUPPORTED_FILE_CLASSES
 from tests.conftest import ALL_FILES
 
 pytestmark = pytest.mark.parametrize(

@@ -1,7 +1,8 @@
 import pathlib
 
-from asic.files.definitions.pep import PEP
 from pytest import fixture
+
+from asic.files.definitions.pep import PEP
 
 from .conftest import ALL_FILES, TESTFILES
 

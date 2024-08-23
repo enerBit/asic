@@ -1,9 +1,9 @@
+import importlib.resources
 import json as json
 import re
 from enum import Enum
 from typing import Annotated
 
-import pkg_resources
 from pydantic import BaseModel, StringConstraints
 
 LOCAL_LOCATION_TEMPLATE = "{remote_parent}/{normalized_version}/{remote_name}"
@@ -74,7 +74,14 @@ def pattern_to_template_replacement(match_object: re.Match) -> str:
     template_key = match_object["capture_name"]
     regex = match_object["regex"]
     match template_key:
-        case "location_month" | "name_month" | "location_day" | "name_day" | "location_year" | "name_year":
+        case (
+            "location_month"
+            | "name_month"
+            | "location_day"
+            | "name_day"
+            | "location_year"
+            | "name_year"
+        ):
             quant_match = PATTERN_REGEX_EXACT_QUANTIFIER.match(regex)
             if quant_match is not None:
                 quantifier_template = f":0{quant_match['exact_quantifier']}"
@@ -97,10 +104,13 @@ def load_asic_file_extension_map() -> dict[str, ASICExtesionMap]:
     """Return a list of ASIC extension maps"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
-    stream = pkg_resources.resource_stream("asic", "data/ASIC_FILE_EXTENSION_MAP.jsonl")
+    resource = importlib.resources.files("asic").joinpath(
+        "data/ASIC_FILE_EXTENSION_MAP.jsonl"
+    )
     lines = []
-    for line in stream:
-        lines.append(json.loads(line))
+    with resource.open("r") as src:
+        for line in src:
+            lines.append(json.loads(line))
 
     asic_file_extension_mapper = {
         line["asic_extension"]: ASICExtesionMap.model_validate(line) for line in lines
@@ -112,17 +122,18 @@ def load_asic_file_config() -> dict[str, ASICFileConfig]:
     """Return a list of ASIC file configurations"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
-    stream = pkg_resources.resource_stream("asic", "data/ASIC_FILE_CONFIG.jsonl")
+    resource = importlib.resources.files("asic").joinpath("data/ASIC_FILE_CONFIG.jsonl")
     lines = []
-    for line in stream:
-        lines.append(json.loads(line))
+    with resource.open("r") as src:
+        for line in src:
+            lines.append(json.loads(line))
 
     asic_file_config_definition = {
         line["code"]: ASICFileConfigDefinition.model_validate(line) for line in lines
     }
     # mappping = {c: t[1] for c, t in TEMPLATE_PATTERN_MAPPING.items()}
     # code_template = "{code}"
-    asic_file_config: dict[str, ASICFileConfig] = dict()
+    asic_file_config: dict[str, ASICFileConfig] = {}
     for c, fcd in asic_file_config_definition.items():
         name_template = pattern_to_template(fcd.name_pattern)
         location_template = pattern_to_template(fcd.location_pattern)

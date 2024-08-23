@@ -13,8 +13,11 @@ import typer
 from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 from asic.config import ASICFileVisibility
 from asic.files.definitions import SUPPORTED_FILE_CLASSES
-from asic.ftp import grab_file  # list_supported_files_in_location,
-from asic.ftp import get_ftps, list_supported_files
+from asic.ftp import (
+    get_ftps,
+    grab_file,  # list_supported_files_in_location,
+    list_supported_files,
+)
 from asic.publication import list_latest_published_versions
 
 logger = logging.getLogger("asic")
@@ -26,20 +29,16 @@ SUPPORTED_FILE_KINDS = sorted([k.lower() for k in SUPPORTED_FILE_CLASSES])
 SUPPORTED_FILE_KINDS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_FILE_KINDS}"
 SUPPORTED_EXTENSIONS = [e.lower() for e in ASIC_FILE_EXTENSION_MAP.keys()]
 SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"""Must match one of: ['{"', '".join(SUPPORTED_EXTENSIONS[:6])}', ..., '{"', '".join(SUPPORTED_EXTENSIONS[-2:])}']"""
-PUBLIC_SEARCHEABLE_LOCATIONS = set(
-    [
-        c.location_template.encode("unicode-escape").decode().lower()
-        for f, c in ASIC_FILE_CONFIG.items()
-        if c.visibility == ASICFileVisibility.PUBLIC
-    ]
-)
-PRIVATE_SEARCHEABLE_LOCATIONS = set(
-    [
-        c.location_template.encode("unicode-escape").decode().lower()
-        for f, c in ASIC_FILE_CONFIG.items()
-        if c.visibility == ASICFileVisibility.AGENT
-    ]
-)
+PUBLIC_SEARCHEABLE_LOCATIONS = {
+    c.location_template.encode("unicode-escape").decode().lower()
+    for f, c in ASIC_FILE_CONFIG.items()
+    if c.visibility == ASICFileVisibility.PUBLIC
+}
+PRIVATE_SEARCHEABLE_LOCATIONS = {
+    c.location_template.encode("unicode-escape").decode().lower()
+    for f, c in ASIC_FILE_CONFIG.items()
+    if c.visibility == ASICFileVisibility.AGENT
+}
 
 cli = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 
@@ -114,13 +113,13 @@ def validate_version(version: str) -> str:
 
 
 def months_callback(values: list[str]) -> list[str]:
-    months = sorted(list(set([validate_month(v) for v in values])), reverse=True)
+    months = sorted({validate_month(v) for v in values}, reverse=True)
     return months
 
 
 def file_kinds_callback(values: list[str]) -> list[str]:
     files = sorted(
-        list(set([validate_file_kind(v) for v in values])),
+        {validate_file_kind(v) for v in values},
         reverse=True,
     )
 
@@ -128,7 +127,7 @@ def file_kinds_callback(values: list[str]) -> list[str]:
 
 
 def extensions_callback(values: list[str]) -> list[str]:
-    extensions = list(set([validate_version(v) for v in values]))
+    extensions = list({validate_version(v) for v in values})
 
     return extensions
 

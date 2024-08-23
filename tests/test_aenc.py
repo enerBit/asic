@@ -1,7 +1,8 @@
 import pathlib
 
-from asic.files.definitions.aenc import AENC
 from pytest import fixture
+
+from asic.files.definitions.aenc import AENC
 
 from .conftest import ALL_FILES, TESTFILES
 
