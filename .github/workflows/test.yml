@@ -52,4 +52,4 @@ jobs:
       - name: Type check code
         run: uv run mypy src
       - name: Type check tests
-        run: uv run mypy tsts
+        run: uv run mypy tests
