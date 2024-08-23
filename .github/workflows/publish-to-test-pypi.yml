@@ -26,19 +26,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install build tools
-        run: >-
-          python -m
-          pip install
-          --upgrade
-          setuptools wheel
+      - name: Set up uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Build and wheel
-        run: >-
-          python
-          setup.py
-          sdist
-          bdist_wheel
+        run: uvx --from build pyproject-build --installer uv
 
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

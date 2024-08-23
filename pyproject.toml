@@ -1,0 +1,84 @@
+[project]
+name = "asic"
+dynamic = ["version"]
+description = "Download and format ASIC files"
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.10"
+Homepage = "https://github.com/enerBit/asic"
+Repository = "https://github.com/enerBit/asic.git"
+authors = [{ name = "enerBit", email = "jtamayoh@gmail.com" }]
+keywords = [
+    "asic",
+    "xm",
+    "colombia",
+    "mem",
+    "ftp",
+    "development",
+    "integration",
+    "expertos",
+    "mercado",
+    "energia",
+    "mayorista",
+]
+dependencies = [
+    "requests",
+    "html5lib",
+    "beautifulsoup4",
+    "pytz",
+    "pandas",
+    "pydantic",
+    "typer",
+]
+[project.scripts]
+asic = "asic.cli:cli"
+
+[tool.uv]
+dev-dependencies = [
+    "mypy",
+    "pytest",
+    "pytest",
+    "pytest-datafiles",
+    "types-setuptools",
+    "types-requests",
+    "pandas-stubs",
+    "build",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/asic/VERSION"
+pattern = "^(?P<version>.+)$"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/asic"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["src/asic"]
+include = ["/tests"]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib"]
+
+[tool.ruff]
+line-length = 119
+# max-complexity = 18
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["B", "C", "E", "F", "W", "B9", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    # Whitelisted default arguments
+    "fastapi.Header",
+    "fastapi.Depends",
+    "typer.Option",
+    "typer.Argument",
+]

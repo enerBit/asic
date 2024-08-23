@@ -1,7 +1,8 @@
 import pathlib
 
-from asic.files.definitions.pme import PME
 from pytest import fixture
+
+from asic.files.definitions.pme import PME
 
 from .conftest import ALL_FILES, TESTFILES
 
