@@ -1,9 +1,12 @@
+import contextlib
 import datetime as dt
 import ftplib
 import functools
+import io
 import itertools
 import logging
 import pathlib
+import ssl
 from typing import Iterable, Type
 
 import pydantic
@@ -13,6 +16,9 @@ from asic.files.definitions import SUPPORTED_FILE_CLASSES
 from asic.files.file import AsicFile, FileKind
 
 logger = logging.getLogger(__name__)
+
+
+SSL_CONTEXT = ssl.create_default_context()
 
 SUPPORTED_ASIC_EXTENSIONS = frozenset(ASIC_FILE_EXTENSION_MAP.keys())
 
@@ -30,21 +36,34 @@ def get_ftps(
     ftps_user: str,
     ftps_password: pydantic.SecretStr,
     ftps_port: int,
+    verbosity: int = 0,
 ):
     ftps = ftplib.FTP_TLS(
-        host=ftps_host,
         encoding="Latin-1",
-        # timeout=10,
     )
 
-    ftps.connect(
-        port=ftps_port,
-    )
+    ftps.set_debuglevel(verbosity - 1)
+    with contextlib.redirect_stdout(io.StringIO()) as f:
+        ftps.connect(
+            host=ftps_host,
+            port=ftps_port,
+        )
+    for line in f.getvalue().splitlines():
+        logger.debug(f"FTP: {line}")
     logger.info(f"Login to FTP '{ftps_host}' as '{ftps_user}'")
-    ftps.login(user=ftps_user, passwd=ftps_password.get_secret_value())
 
-    ftps.prot_p()
+    with contextlib.redirect_stdout(io.StringIO()) as f:
+        ftps.login(user=ftps_user, passwd=ftps_password.get_secret_value())
+    for line in f.getvalue().splitlines():
+        logger.debug(f"FTP: {line}")
 
+    with contextlib.redirect_stdout(io.StringIO()) as f:
+        # Explicitly secure the connection
+        ftps.prot_p()
+
+    for line in f.getvalue().splitlines():
+        logger.debug(f"FTP: {line}")
+    ftps.set_debuglevel(0)
     return ftps
 
 

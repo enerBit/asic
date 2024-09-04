@@ -72,6 +72,7 @@ def main(
     ctx.meta["ASIC_FTPS_PORT"] = ftps_port
     ctx.meta["ASIC_FTPS_USER"] = ftps_user
     ctx.meta["ASIC_FTPS_PASSWORD"] = pydantic.SecretStr(ftps_password)
+    ctx.meta["VERBOSITY"] = verbosity
 
 
 def validate_month(month: str) -> str:
@@ -207,6 +208,7 @@ def list_files(
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
     ftps_user = ctx.meta["ASIC_FTPS_USER"]
     ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
+    verbosity = ctx.meta["VERBOSITY"]
 
     if not extensions:
         extensions = [None]  # type: ignore
@@ -222,6 +224,7 @@ def list_files(
         ftps_user=ftps_user,
         ftps_password=ftps_password,
         ftps_port=ftps_port,
+        verbosity=verbosity,
     )
     month_dates = [parse_month(m) for m in months]
     file_list = list_supported_files(
@@ -282,6 +285,7 @@ def download(
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
     ftps_user = ctx.meta["ASIC_FTPS_USER"]
     ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
+    verbosity = ctx.meta["VERBOSITY"]
 
     locations = PUBLIC_SEARCHEABLE_LOCATIONS
     if agent is not None:
@@ -292,6 +296,7 @@ def download(
         ftps_user=ftps_user,
         ftps_password=ftps_password,
         ftps_port=ftps_port,
+        verbosity=verbosity,
     )
     month_dates = [parse_month(m) for m in months]
     file_list = list_supported_files(
@@ -323,6 +328,7 @@ def download(
                 ftps_user=ftps_user,
                 ftps_password=ftps_password,
                 ftps_port=ftps_port,
+                verbosity=verbosity,
             )
 
             grab_file(ftps, remote.path, local)
