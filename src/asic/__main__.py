@@ -1,3 +1,3 @@
-from .cli import cli
+from asic.cli import cli
 
 cli()

@@ -2,7 +2,7 @@ import datetime as dt
 import logging
 import os
 import pathlib
-from typing import Optional
+from typing import Annotated, Optional
 
 import pydantic
 import rich
@@ -115,6 +115,13 @@ def validate_version(version: str) -> str:
     if version.lower() not in SUPPORTED_EXTENSIONS:
         raise typer.BadParameter(SUPPORTED_EXTENSIONS_ERROR_MESSAGE)
     return version
+
+
+def validate_destination(destination: str) -> pathlib.Path:
+    res = pathlib.Path(destination)
+    if not (res.exists() and res.is_dir()):
+        raise typer.BadParameter("must be a valid directory path")
+    return res
 
 
 def months_callback(values: list[str]) -> list[str]:
@@ -249,7 +256,13 @@ def list_files(
 @cli.command()
 def download(
     ctx: typer.Context,
-    to_tidy: bool = typer.Option(False, "--tidy", help="Tidy each file before saving"),
+    to_tidy: Annotated[
+        Optional[bool],
+        typer.Option("--tidy/--no-tidy", help="Tidy and save each file"),
+    ] = None,
+    to_raw: Annotated[
+        Optional[bool], typer.Option("--raw/--no-raw", help="Save raw file")
+    ] = None,
     to_format: str = typer.Option(
         "parquet", "--format", callback=validate_format, help="Format to save the file"
     ),
@@ -274,7 +287,7 @@ def download(
         callback=extensions_callback,
         help=SUPPORTED_EXTENSIONS_ERROR_MESSAGE,
     ),
-    destination: pathlib.Path = typer.Argument(...),
+    destination: pathlib.Path = typer.Argument(..., callback=validate_destination),
 ):
     """
     Download files from asic's ftp server to local DESTINATION folder.
@@ -287,8 +300,6 @@ def download(
         kinds = SUPPORTED_FILE_KINDS
     if to_format is not None:
         to_format = to_format.lower()
-
-    to_raw = False
 
     ftps_host = ctx.meta["ASIC_FTPS_HOST"]
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
@@ -322,8 +333,8 @@ def download(
     for f in rich.progress.track(file_list, description="Dowloading files..."):
         logger.info(f"File: {f.path}")
         remote = f
-        local = destination / str(f.path)[1:]  # hack to remove root anchor
-        os.makedirs(local.parent, exist_ok=True)
+        parts_without_anchor = list(f.path.parts)[1:]  # hack to remove root anchor
+        local = destination / pathlib.Path(*parts_without_anchor)
         logger.debug(f"Downloading {remote} to {local}")
 
         try:
@@ -342,41 +353,65 @@ def download(
 
             content_stream = grab_file(ftps, remote.path)
 
+        if to_raw:
+            local.parent.mkdir(parents=True, exist_ok=True)
+            with open(local, "wb") as raw_destination:
+                raw_destination.write(content_stream.read())
+
+        if to_tidy is None:
+            continue
+
+        content_stream.seek(0)
         if to_tidy:
+            data = f.preprocess(content_stream)
             normalized_version = (
                 f.metadata.version
                 if f.metadata.version is not None
                 else f.metadata.extension
             )
-            subpath_str = str(f.path)[1:].replace(
+            subpath_str = destination.joinpath(
+                *f.path.parts[1:]
+            )  # hack to remove root anchor
+            subpath_str = str(subpath_str).replace(
                 f"{f.year:04d}-{f.month:02d}",
-                f"{f.year:04d}-{f.month:02d}\\{normalized_version}",
+                f"{f.year:04d}-{f.month:02d}{os.sep}{normalized_version}",
             )
 
-            tidy_path = destination.joinpath(subpath_str)
+            tidy_path = pathlib.Path(subpath_str)
+            tidy_path.parent.mkdir(parents=True, exist_ok=True)
 
-            tidy_content = f.preprocess(content_stream)
             match to_format:
                 case "csv":
-                    write_to = tidy_path.with_suffix(".csv")
-                    tidy_content.to_csv(
+                    write_to = tidy_path.with_suffix(".csv").is_absolute
+                    data.to_csv(
                         write_to,
                         encoding="utf-8",
+                        index=False,
                     )
                 case "parquet":
                     write_to = tidy_path.with_suffix(".parquet")
-                    tidy_content.to_parquet(
+                    data.to_parquet(
                         write_to,
                         engine="pyarrow",
+                        index=False,
                     )
-        elif to_raw:
-            with open(local, "wb") as f:
-                f.write(content_stream.read())
         else:
             data = f.read(content_stream)
-            data.to_csv(
-                local,
-                encoding="utf-8",
-            )
+            local.parent.mkdir(parents=True, exist_ok=True)
+            match to_format:
+                case "csv":
+                    write_to = local.with_suffix(".csv")
+                    data.to_csv(
+                        write_to,
+                        encoding="utf-8",
+                        index=False,
+                    )
+                case "parquet":
+                    write_to = local.with_suffix(".parquet")
+                    data.to_parquet(
+                        write_to,
+                        engine="pyarrow",
+                        index=False,
+                    )
 
     ftps.quit()
