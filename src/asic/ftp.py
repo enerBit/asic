@@ -67,12 +67,17 @@ def get_ftps(
     return ftps
 
 
-def grab_file(ftp: ftplib.FTP, remote: pathlib.PurePath, local: pathlib.Path):
-    with open(local, "wb") as dst:
-        try:
-            ftp.retrbinary("RETR " + str(remote), dst.write)
-        except ftplib.error_reply:
-            logger.exception(f"Failed to download file '{str(remote)}'")
+def grab_file(
+    ftp: ftplib.FTP,
+    remote: pathlib.PurePath,
+) -> io.BytesIO:
+    stream = io.BytesIO()
+    try:
+        ftp.retrbinary("RETR " + str(remote), stream.write)
+    except ftplib.error_reply:
+        logger.exception(f"Failed to download file '{str(remote)}'")
+    stream.seek(0)
+    return stream
 
 
 def grab_files(ftp: ftplib.FTP, files: Iterable[DownloadSpec]) -> None:

@@ -29,7 +29,7 @@ class FileReader:
         logger.debug(f"Reading as {file_type}: {target}")
 
         if file_type in ["csv", "txt", "tsv"]:
-            res = pd.read_csv(target, **_def)
+            res = pd.read_csv(target, **_def, engine="pyarrow")
 
         elif file_type in ["xls", "xlsx"]:
             if "sheet_name" in _def:

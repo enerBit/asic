@@ -39,6 +39,7 @@ PRIVATE_SEARCHEABLE_LOCATIONS = {
     for f, c in ASIC_FILE_CONFIG.items()
     if c.visibility == ASICFileVisibility.AGENT
 }
+SUPPORTED_FORMATS = ["csv", "parquet"]
 
 cli = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 
@@ -73,6 +74,12 @@ def main(
     ctx.meta["ASIC_FTPS_USER"] = ftps_user
     ctx.meta["ASIC_FTPS_PASSWORD"] = pydantic.SecretStr(ftps_password)
     ctx.meta["VERBOSITY"] = verbosity
+
+
+def validate_format(format: str) -> str:
+    if format.lower() not in SUPPORTED_FORMATS:
+        raise typer.BadParameter(f"Must match one of: {SUPPORTED_FORMATS}")
+    return format
 
 
 def validate_month(month: str) -> str:
@@ -245,8 +252,9 @@ def list_files(
 @cli.command()
 def download(
     ctx: typer.Context,
-    is_preprocessing_required: bool = typer.Option(
-        False, "--prepro", help="Preprocess each file after donwload"
+    to_tidy: bool = typer.Option(False, "--tidy", help="Tidy each file before saving"),
+    to_format: str = typer.Option(
+        "parquet", "--format", callback=validate_format, help="Format to save the file"
     ),
     months: list[str] = typer.Option(
         ...,
@@ -280,6 +288,8 @@ def download(
         extensions = [None]  # type: ignore
     if not kinds:
         kinds = SUPPORTED_FILE_KINDS
+    if to_format is not None:
+        to_format = to_format.lower()
 
     ftps_host = ctx.meta["ASIC_FTPS_HOST"]
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
@@ -318,7 +328,7 @@ def download(
         logger.debug(f"Downloading {remote} to {local}")
 
         try:
-            grab_file(ftps, remote.path, local)
+            content_stream = grab_file(ftps, remote.path)
 
         # except (ssl.SSLZeroReturnError, ssl.SSLEOFError):
         except Exception:
@@ -331,9 +341,9 @@ def download(
                 verbosity=verbosity,
             )
 
-            grab_file(ftps, remote.path, local)
+            content_stream = grab_file(ftps, remote.path)
 
-        if is_preprocessing_required:
+        if to_tidy:
             normalized_version = (
                 f.metadata.version
                 if f.metadata.version is not None
@@ -344,12 +354,24 @@ def download(
                 f"{f.year:04d}-{f.month:02d}\\{normalized_version}",
             )
 
-            preprocessed_path = destination.joinpath(subpath_str)
+            tidy_path = destination.joinpath(subpath_str)
 
-            preprocessed = f.preprocess(local)
-            write_to = preprocessed_path.with_suffix(".csv")
-            preprocessed.to_csv(
-                write_to,
-            )
+            tidy_content = f.preprocess(content_stream)
+            match to_format:
+                case "csv":
+                    write_to = tidy_path.with_suffix(".csv")
+                    tidy_content.to_csv(
+                        write_to,
+                        engine="pyarrow",
+                    )
+                case "parquet":
+                    write_to = tidy_path.with_suffix(".parquet")
+                    tidy_content.to_parquet(
+                        write_to,
+                        engine="pyarrow",
+                    )
+        else:
+            with open(local, "wb") as f:
+                f.write(content_stream.read())
 
     ftps.quit()

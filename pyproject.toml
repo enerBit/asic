@@ -29,6 +29,7 @@ dependencies = [
     "pandas",
     "pydantic",
     "typer",
+    "pyarrow>=17.0.0",
 ]
 [project.scripts]
 asic = "asic.cli:cli"
