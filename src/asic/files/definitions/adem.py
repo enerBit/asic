@@ -99,9 +99,20 @@ class ADEM(AsicFile):
         """
         total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
+        var_codes = [
+            "DCOGD",  # Demanda de Cogeneradores (uso de respaldo), en kWh
+            "DCTIE",  # Demanda comercial tie en kWh.
+            "DMNR",  # Demanda no regulada, en kWh.
+            "DMRE",  # Demanda regulada, en kWh.
+            "DPRS",  # Demanda real de los OR, en kWh.
+            "PDTI",  # Pérdidas asociadas a la demanda tie , en kWh.
+            "PRGE",  # Pérdidas de agentes generadores, en kWh.
+            "PRNR",  # Pérdida asociada a la demanda no regulada, en kWh.
+            "PRRE",  # Pérdida asociada a la demanda regulada, en kWh.
+        ]
 
         filter = np.full(total.index.shape, True)
-        filter = filter & (total["CODIGO"].isin(["DMRE", "PRRE"]))
+        filter = filter & (total["CODIGO"].isin(var_codes))
         if self.agent is not None:
             filter = filter & (total["AGENTE"] == self.agent.upper())
 
@@ -139,13 +150,16 @@ class ADEM(AsicFile):
             .reset_index()
         )
         cols = [
-            f"{l1}_{l0}" if l1 else str(l0)
+            f"{l1}" if l1 else str(l0)
             for (l0, l1) in zip(
-                total.columns.get_level_values(0), total.columns.get_level_values(1), strict=False
+                total.columns.get_level_values(0),
+                total.columns.get_level_values(1),
+                strict=False,
             )
         ]
         total.columns = cols  # type: ignore
-        return_cols = ["FECHA_HORA", "AGENTE", "DMRE_VALOR", "PRRE_VALOR"]
+
+        return_cols = ["FECHA_HORA", "AGENTE"] + [f"{v}" for v in var_codes]
         return total[return_cols]
 
 

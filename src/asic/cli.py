@@ -13,11 +13,8 @@ import typer
 from asic import ASIC_FILE_CONFIG, ASIC_FILE_EXTENSION_MAP
 from asic.config import ASICFileVisibility
 from asic.files.definitions import SUPPORTED_FILE_CLASSES
-from asic.ftp import (
-    get_ftps,
-    grab_file,  # list_supported_files_in_location,
-    list_supported_files,
-)
+from asic.ftp import grab_file  # list_supported_files_in_location,
+from asic.ftp import get_ftps, list_supported_files
 from asic.publication import list_latest_published_versions
 
 logger = logging.getLogger("asic")
@@ -291,6 +288,8 @@ def download(
     if to_format is not None:
         to_format = to_format.lower()
 
+    to_raw = False
+
     ftps_host = ctx.meta["ASIC_FTPS_HOST"]
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
     ftps_user = ctx.meta["ASIC_FTPS_USER"]
@@ -362,7 +361,7 @@ def download(
                     write_to = tidy_path.with_suffix(".csv")
                     tidy_content.to_csv(
                         write_to,
-                        engine="pyarrow",
+                        encoding="utf-8",
                     )
                 case "parquet":
                     write_to = tidy_path.with_suffix(".parquet")
@@ -370,8 +369,14 @@ def download(
                         write_to,
                         engine="pyarrow",
                     )
-        else:
+        elif to_raw:
             with open(local, "wb") as f:
                 f.write(content_stream.read())
+        else:
+            data = f.read(content_stream)
+            data.to_csv(
+                local,
+                encoding="utf-8",
+            )
 
     ftps.quit()
