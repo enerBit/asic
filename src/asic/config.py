@@ -4,6 +4,7 @@ import re
 from enum import Enum
 from typing import Annotated
 
+from importlib.resources import files
 from pydantic import BaseModel, StringConstraints
 
 LOCAL_LOCATION_TEMPLATE = "{remote_parent}/{normalized_version}/{remote_name}"
@@ -104,6 +105,7 @@ def load_asic_file_extension_map() -> dict[str, ASICExtesionMap]:
     """Return a list of ASIC extension maps"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
+
     resource = importlib.resources.files("asic").joinpath(
         "data/ASIC_FILE_EXTENSION_MAP.jsonl"
     )
