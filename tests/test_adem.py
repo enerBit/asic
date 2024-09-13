@@ -1,7 +1,8 @@
 import pathlib
 
-from asic.files.definitions.adem import ADEM
 from pytest import fixture
+
+from asic.files.definitions.adem import ADEM
 
 from .conftest import ALL_FILES, TESTFILES
 

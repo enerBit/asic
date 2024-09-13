@@ -141,7 +141,7 @@ class ADEM(AsicFile):
         cols = [
             f"{l1}_{l0}" if l1 else str(l0)
             for (l0, l1) in zip(
-                total.columns.get_level_values(0), total.columns.get_level_values(1)
+                total.columns.get_level_values(0), total.columns.get_level_values(1), strict=False
             )
         ]
         total.columns = cols  # type: ignore

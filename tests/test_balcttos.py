@@ -1,7 +1,8 @@
 import pathlib
 
-from asic.files.definitions.balcttos import BALCTTOS
 from pytest import fixture
+
+from asic.files.definitions.balcttos import BALCTTOS
 
 from .conftest import ALL_FILES, TESTFILES
 
