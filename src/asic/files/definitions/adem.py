@@ -55,6 +55,7 @@ class ADEM(AsicFile):
     visibility = VisibilityEnum.PUBLIC
     name_pattern = "(?P<kind>adem)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[tT]{1}[xX]{1}[a-zA-Z0-9]+)"
     location_pattern = "/informacion_xm/publicok/sic/comercia/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
+    location = "/informacion_xm/publicok/sic/comercia/{location_year:04}-{location_month:02}/"
     description = "Los archivos de demanda comercial"
 
     _format = FORMAT

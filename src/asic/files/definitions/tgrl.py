@@ -46,13 +46,13 @@ FORMAT = {
 }
 
 
-class TRSD(AsicFile):
-    kind = FileKind.TRSD
+class TGRL(AsicFile):
+    kind = FileKind.TGRL
     visibility = VisibilityEnum.PUBLIC
-    name_pattern = "(?P<kind>trsd)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = "(?P<kind>tgrl)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
     location_pattern = "/informacion_xm/publicok/sic/comercia/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
     location = "/informacion_xm/publicok/sic/comercia/{location_year:04}-{location_month:02}/"
-    description = ""  # TODO
+    description = "Información general horaria que soporta las liquidaciones asociadas con los conceptos de desviación, compra/venta de contratos, restricciones, reconciliaciones, AGC, etc."
 
     _format = FORMAT
 
@@ -86,9 +86,13 @@ class TRSD(AsicFile):
 
     def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
-        trsd: se publica un archivo por día.
-        versiones: TX1, TX2, TXR y TXF
-        PBNA: Precio de bolsa nacional
+        tgrl: se publica un archivo por día.
+        versiones: TX2, TXR ,TXF, TXn
+        CODIGO:
+            EBRC: Energía en bolsa regulada a cargo, en kWh.
+            EBOC: Energía en bolsa no regulada a cargo, en kWh.
+        AGENTE:
+            ENBC: Código SIC del agente comercializador
         """
         total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
@@ -96,12 +100,10 @@ class TRSD(AsicFile):
             total["FECHA"],
             format="%Y-%m-%d",
         )
-        total = total.set_index(["CODIGO", "CONTENIDO", "FECHA"]).stack().reset_index()
-        total = total.rename(columns={"level_3": "NOMBRE HORA", 0: "PRECIO"})
+        total = total.set_index(["AGENTE","CODIGO", "CONTENIDO", "FECHA"]).stack().reset_index()
+        total = total.rename(columns={"level_4": "NOMBRE HORA", 0: "VALOR"})
         total["HORA"] = (total["NOMBRE HORA"].str.slice(start=-2)).astype(int) - 1
         total["HORA"] = pd.to_timedelta(total["HORA"], unit="h")
         total["FECHA_HORA"] = total["FECHA"] + total["HORA"]
-        total["HORA"] = total["FECHA_HORA"].dt.strftime("%H:%M:%S")
-        total["FECHA"] = total["FECHA"].dt.date
-        ret_cols = ["FECHA_HORA", "CODIGO", "CONTENIDO", "PRECIO"]
+        ret_cols = ["FECHA_HORA", "AGENTE", "CODIGO", "CONTENIDO", "VALOR"]
         return total[ret_cols]

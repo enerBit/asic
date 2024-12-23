@@ -54,6 +54,7 @@ class BALCTTOS(AsicFile):
     visibility = VisibilityEnum.AGENT
     name_pattern = "(?P<kind>BalCttos)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
     location_pattern = "/informacion_xm/USUARIOSK/(?P<location_agent>[a-zA-Z]{4})/SIC/COMERCIA/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
+    location = "/informacion_xm/usuariosk/{location_agent}/sic/comercia/{location_year:04}-{location_month:02}/"
     description = "Los archivos de despacho de demanda por mercados R y NR, Nacional, TIE e Internacional"
 
     _format = FORMAT

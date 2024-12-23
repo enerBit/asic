@@ -64,21 +64,22 @@ class FileKind(str, enum.Enum):
     PEP = "pep"
     PME = "PME"
     TRSD = "trsd"
+    TFROC = "tfroc"
+    TGRL = "tgrl"
+    TSERV = "tserv"
+    TRSM = "trsm"
+    SNTIE = "sntie"
+    AFAC = "afac"
+    DSPCTTOS = "dspcttos"
 
-    # TGRL = "tgrl"
-    # TRSM = "trsm"
     # LDCBMR = "ldcbmr"
-    # SNTIE = "sntie"
-    # DSPCTTOS = "dspcttos"
     # PUBFC = "pubfc"
     # PUBFC_FALLA_HURTO = "pubfc_falla-hurto"
-    # TFROC = "tfroc"
     # CLIQ = "cliq"
     # DESBM = "desbm"
     # DESBMEX = "desbmex"
     # OEFAGNCH = "oefagnch"
     # FRONTERAS = "fronterascomerciales"
-    # AFAC = "afac"
 
 
 class AsicFileMetadataInput(pydantic.BaseModel):
@@ -105,6 +106,7 @@ class AsicFile(ABC):
     visibility: VisibilityEnum
     name_pattern: str
     location_pattern: str
+    location: str
     description: str
 
     @property

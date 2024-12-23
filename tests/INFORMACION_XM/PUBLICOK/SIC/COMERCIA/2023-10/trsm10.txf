@@ -1,0 +1,44 @@
+FECHA;CODIGO;DESCRIPCION;VALOR
+2023-10-01;CEEE;Costo equivalente de energ�a, en $/kWh.;81.896
+2023-10-01;CEE_ETDP;Energ�a total demandada proyectada en el SIN en kWh.;6763558140.97471
+2023-10-01;CERE;Costo equivalente real en energ�a, en $/kWh.;79.4618418741
+2023-10-01;CERE_ETDR;ETDR para Cargo por Confiabilidad, en kWh (Resoluci�n CREG 071 de 2006).;6393545696.57
+2023-10-01;CERE_GRDC;Generaci�n real de los recursos de generaci�n despachados centralmente, en kWh.;6383606758.76
+2023-10-01;CERE_RDV;Reducci�n de energ�a verificada del programa RD para c�lculo del CERE, en kWh.;0
+2023-10-01;CERE_VEBO;Ventas en bolsa de los recursos de generaci�n no despachados centralmente, en kWh.;9938937.81
+2023-10-01;CRPC;Cargo por Confiabilidad, en $.;464634256795.47
+2023-10-01;DECOM_195;Demanda comercial nacional aplicable a la Resoluci�n CREG 195 de 2015. Este concepto est� en kWh.;6978982641.12
+2023-10-01;DECOM_NAL;Demanda comercial nacional aplicable a la Resoluci�n CREG 026 de 2014. Este concepto est� en kWh.;6978982641.12
+2023-10-01;DELTNEGSIS;Variable mensual que resulta de aplicar al sistema la diferencia entre los ingresos del generador asociados a la entrega de cada una de las EVE y  el valor calculado en la componente IT. S�lo se tienen cuenta los periodos d�nde esta diferencia es negativa. Este concepto est� en pesos.;-476028898372.79996326244902907905489505
+2023-10-01;DELTPOSSIS;Variable mensual que resulta de aplicar al sistema la diferencia entre los ingresos del generador asociados a la entrega de cada una de las EVE y  el valor calculado en la componente IT. S�lo se tienen cuenta los periodos d�nde la diferencia es positiva. Este concepto est� en pesos.;19743669336.8743821826093076224861115042
+2023-10-01;DENEGFALTA;Delta negativo del sistema (DELTNEGSIS), faltante por entregar a los comercializadores en pesos  por concepto de energ�a vendida y embalsada, seg�n el literal g del Art�culo 7 de la Resoluci�n CREG 026 de 2014. Este concepto est� en pesos.;-372107310805.26634689574287123132052629
+2023-10-01;DENEGSISLI;Variable mensual que resulta de la diferencia entre los ingresos del generador asociados a la entrega de cada una de las EVE y el valor de IT. S�lo se tienen cuenta los periodos d�nde esta diferencia es negativa luego de aplicar el literal g del Art.7 Res.026/2014. Este concepto est� en pesos.;-87820335028.862732086250938249406607556
+2023-10-01;DEPOSFALTA;Delta positivo del sistema (DELTPOSSIS), faltante por liquidar a los generadores y comercializadores por concepto de energ�a vendida y embalsada, seg�n el literal g del Art�culo 7 de la Resoluci�n CREG 026 de 2014. Este concepto est� en pesos.;0
+2023-10-01;DEPOSSISLI;Variable mensual que resulta de la diferencia entre los ingresos del generador asociados a la entrega de cada una de las EVE y el valor de IT. S�lo se tienen cuenta los periodos d�nde la diferencia es positiva luego de aplicar el literal g del Art.7 de la Res.026/2014. Este concepto est� en pesos.;3642416798.20349790215408802415835038551
+2023-10-01;DESV;Desviaci�n, en $.;47851637411.61
+2023-10-01;DISEG;Valor de las restricciones asignadas a los comercializadores del sistema sin alivios en $;99466778836.72
+2023-10-01;DMRE;Demanda real, en kWh.;6929481604.83
+2023-10-01;DTFE;DTF Efectiva Anual.;9.4
+2023-10-01;FIMP;Factor impositivo aplicable al GMF.;.220078667961847
+2023-10-01;IPDC;�ndice de precio del consumidor.;144.02
+2023-10-01;IPDP;�ndice de precio del productor.;180.49
+2023-10-01;MC;Costo promedio ponderado por energ�a, expresado en pesos por kilovatio hora (COP/kWh), de todos los contratos resultantes de las convocatorias p�blicas a las que hace referencia la Resoluci�n CREG 130 de 2019 o aquella que la modifique, sustituya o adicione, con destino al mercado regulado.;313.692379572
+2023-10-01;MRCL;Responsabilidad comercial de AGC, en kWh.;236100000.39
+2023-10-01;OEFMP;Total en $ de las Obligaciones de Energ�a Firme mensual por submercado multiplicada por precio de la subasta utilizado para el c�lculo del CEE.;553907822519.694354466067969278894635247
+2023-10-01;PPBO;Precio de Bolsa promedio ponderado con compras en bolsa, en $/kWh.;1540.32854008458920373284300792553055167
+2023-10-01;PREA;P�rdida real, en kWh.;93053496.95
+2023-10-01;RECC;Reconciliaci�n, en $.;1079009492231.47
+2023-10-01;REIMP;Rentas por importaciones asignadas a otros mercados, en $.;20800352.718359
+2023-10-01;RESTCONALI;Total de las restricciones del sistema una vez aplicados los alivios en pesos de la Resoluci�n CREG 026 de 2014.  Este concepto est� en pesos.;80663758416.9763468957428712313205263015
+2023-10-01;RF195_SYS;Valor total de las restricciones No asignadas a los comercializadores del sistema en el mes facturado de acuerdo a lo establecido en la Resoluci�n CREG 195 de 2015 en $;
+2023-10-01;TRBO;Transacciones en bolsa, en kWh.;2603568167.1
+2023-10-01;TRBP;Transacciones en bolsa, en $.;2364167847040.79
+2023-10-01;TRMD;Tasa representativa del mercado del �ltimo d�a calendario del mes, en $/USD.;4413.46
+2023-10-01;TRMH;Valor d�lar ultimo d�a h�bil del mes, en $/USD.;4413.46
+2023-10-01;VAGC;Valor de los Servicios de AGC de todas las plantas que lo prestaron en el mes en $.;388348919483.44
+2023-10-01;VFAZ;Valor FAZNI, en $.;20026503185.78
+2023-10-01;VRCL;Responsabilidad comercial de AGC, en $.;39996430386.57
+2023-10-01;VRFP;Valor a pagar por regulaci�n primaria de frecuencia, en $.;7023929169.78
+2023-10-01;VRPOS_SYS;Valor total de las reconciliaciones a favor (Reconciliaciones positivas) de los generadores del sistema en el mes facturado en $;831250708539.98
+2023-10-01;VRRT;Valor restricciones transportadores, en $.;100593705406.71
+2023-10-01;VRSP;Valor de rentas de congesti�n descontando el valor de cubrimiento de pagos anticipados, en $.;
