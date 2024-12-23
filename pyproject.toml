@@ -22,13 +22,14 @@ keywords = [
     "mayorista",
 ]
 dependencies = [
-    "requests",
     "html5lib",
     "beautifulsoup4",
     "pytz",
     "pandas",
     "pydantic",
     "typer",
+    "pytest-cov>=5.0.0",
+    "httpx>=0.27.2",
 ]
 [project.scripts]
 asic = "asic.cli:cli"
