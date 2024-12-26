@@ -95,7 +95,7 @@ ALL_FILES = {
         "agent": "xxxc",
     },
     "tgrl": {
-        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/tgrl1001.Tx2",
+        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/tgrl1001.tx2",
         "kind": "tgrl",
         "visibility": "public",
         "year": 2023,
@@ -106,7 +106,7 @@ ALL_FILES = {
         "agent": None,
     },
     "tserv": {
-        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/tserv10.TxF",
+        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/tserv10.txf",
         "kind": "tserv",
         "visibility": "public",
         "year": 2023,
@@ -117,7 +117,7 @@ ALL_FILES = {
         "agent": None,
     },
     "trsm": {
-        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/trsm10.TxF",
+        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/trsm10.txf",
         "kind": "trsm",
         "visibility": "public",
         "year": 2023,
@@ -128,7 +128,7 @@ ALL_FILES = {
         "agent": None,
     },
     "sntie": {
-        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/sntie10.TxF",
+        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/sntie10.txf",
         "kind": "sntie",
         "visibility": "public",
         "year": 2023,
@@ -139,7 +139,7 @@ ALL_FILES = {
         "agent": None,
     },
     "afac": {
-        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/afac10.TxF",
+        "path": "/INFORMACION_XM/PUBLICOK/SIC/COMERCIA/2023-10/afac10.txf",
         "kind": "afac",
         "visibility": "public",
         "year": 2023,

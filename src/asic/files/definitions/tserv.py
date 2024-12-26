@@ -55,16 +55,12 @@ class TSERV(AsicFile):
         return self._extension
 
     @property
-    def agent(self) -> str:
+    def agent(self) -> str | None:
         return self._agent
 
     @property
-    def version(self) -> str:
+    def version(self) -> str | None:
         return self._version
-
-    @property
-    def data(self) -> pd.DataFrame:
-        return self._data
 
     def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """

@@ -103,16 +103,12 @@ class DSPCTTOS(AsicFile):
         return self._extension
 
     @property
-    def agent(self) -> str:
+    def agent(self) -> str | None:
         return self._agent
 
     @property
-    def version(self) -> str:
+    def version(self) -> str | None:
         return self._version
-
-    @property
-    def data(self) -> pd.DataFrame:
-        return self._data
 
     def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
@@ -179,7 +175,7 @@ class DSPCTTOS(AsicFile):
                 total.columns.get_level_values(0), total.columns.get_level_values(1)
             )
         ]
-        total.columns = cols
+        total.columns = pd.Index(cols)
 
         ret_cols = [
             "FECHA_HORA",
