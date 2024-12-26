@@ -1,6 +1,13 @@
 *.env
 .vscode/
 
+# Ignore ASIC Raw Files and preprocess files
+*.tx*
+*.csv
+
+# Do not ignore test files
+!tests/**/*.tx*
+!tests/**/*.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

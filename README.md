@@ -101,7 +101,7 @@ La opción `--help` imprime la ayuda de cada comando en la pantalla.
  Check latest published settlements in asic's website.
 ```
 
-### Para tener en cuenta
+### ⚠️ PARA TENER EN CUENTA ⚠️
 
 Tener presente que no se está realizando la verificación de certificados del servidor de XM **neptuno.xm.com.co** al consultar las versiones de liquidación publicadas usando el comando **asic pubs**.
 

@@ -1,10 +1,11 @@
 import datetime as dt
 import logging
 import typing
+from io import StringIO
 
 import pandas as pd
 import pydantic
-import requests
+import httpx
 
 from asic import ASIC_FILE_EXTENSION_MAP
 
@@ -70,7 +71,7 @@ def get_monthly_pubs_table() -> pd.DataFrame:
     table_index: int = ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE["table-index"]
 
     logger.debug(f"Getting content from '{url}'")
-    res = requests.get(url, headers=headers, verify=False)
+    res = httpx.get(url, headers=headers, verify=False)
     res.raise_for_status()
 
     html_text = typing.cast(str, res.content)
@@ -79,7 +80,6 @@ def get_monthly_pubs_table() -> pd.DataFrame:
     versions_table = tables[table_index].dropna().T.drop_duplicates().T
     table_headers = versions_table.iloc[0]
     versions_table = pd.DataFrame(versions_table.values[1:], columns=table_headers)
-    versions_table = versions_table.drop(versions_table.index[0])
     return versions_table
 
 
@@ -121,7 +121,7 @@ def prepare_published_versions_to_objects(
 
     latest_version_pub = (
         included_versions.sort_values([table_cols["published_at"]], ascending=False)
-        .groupby([table_cols["month"]])
+        .groupby([table_cols["month"], table_cols["version"]])
         .first()
     ).reset_index()
 

@@ -29,16 +29,6 @@ SUPPORTED_FILE_KINDS = sorted([k.lower() for k in SUPPORTED_FILE_CLASSES])
 SUPPORTED_FILE_KINDS_ERROR_MESSAGE = f"Must match one of: {SUPPORTED_FILE_KINDS}"
 SUPPORTED_EXTENSIONS = [e.lower() for e in ASIC_FILE_EXTENSION_MAP.keys()]
 SUPPORTED_EXTENSIONS_ERROR_MESSAGE = f"""Must match one of: ['{"', '".join(SUPPORTED_EXTENSIONS[:6])}', ..., '{"', '".join(SUPPORTED_EXTENSIONS[-2:])}']"""
-PUBLIC_SEARCHEABLE_LOCATIONS = {
-    c.location_template.encode("unicode-escape").decode().lower()
-    for f, c in ASIC_FILE_CONFIG.items()
-    if c.visibility == ASICFileVisibility.PUBLIC
-}
-PRIVATE_SEARCHEABLE_LOCATIONS = {
-    c.location_template.encode("unicode-escape").decode().lower()
-    for f, c in ASIC_FILE_CONFIG.items()
-    if c.visibility == ASICFileVisibility.AGENT
-}
 
 cli = typer.Typer(no_args_is_help=True, pretty_exceptions_show_locals=False)
 
@@ -51,6 +41,7 @@ def main(
     ftps_port: int = typer.Option(default=210, envvar="ASIC_FTPS_PORT"),
     ftps_user: str = typer.Option(..., envvar="ASIC_FTPS_USER", prompt=True),
     ftps_password: str = typer.Option(..., envvar="ASIC_FTPS_PASSWORD", prompt=True),
+    agent: str = typer.Option(..., envvar="ASIC_AGENT", prompt=True),
 ):
     """
     FTP authentication info should be provided as environment variables (ASIC_FTP_*)
@@ -73,6 +64,7 @@ def main(
     ctx.meta["ASIC_FTPS_USER"] = ftps_user
     ctx.meta["ASIC_FTPS_PASSWORD"] = pydantic.SecretStr(ftps_password)
     ctx.meta["VERBOSITY"] = verbosity
+    ctx.meta["ASIC_AGENT"] = agent
 
 
 def validate_month(month: str) -> str:
@@ -128,6 +120,9 @@ def file_kinds_callback(values: list[str]) -> list[str]:
 
 
 def extensions_callback(values: list[str]) -> list[str]:
+    if values is None:
+        raise typer.BadParameter(SUPPORTED_EXTENSIONS_ERROR_MESSAGE)
+
     extensions = list({validate_version(v) for v in values})
 
     return extensions
@@ -170,9 +165,10 @@ def list_files(
         callback=months_callback,
         help=YEAR_MONTH_MATCH_ERROR_MESSAGE,
     ),
-    agent: Optional[str] = typer.Option(
-        None, help="Agent's asic code, required for private files"
-    ),
+    agent: Optional[str] = typer.Option(...,
+                                        envvar="ASIC_AGENT",
+                                        prompt=True,
+                                        help="Agent's asic code, required for private files"),
     kinds: Optional[list[str]] = typer.Option(
         None,
         "--kind",
@@ -215,9 +211,10 @@ def list_files(
     if not kinds:
         kinds = SUPPORTED_FILE_KINDS
 
-    locations = PUBLIC_SEARCHEABLE_LOCATIONS
-    if agent is not None:
-        locations = locations.union(PRIVATE_SEARCHEABLE_LOCATIONS)
+    locations: set = set()
+    for v in SUPPORTED_FILE_CLASSES.values():
+        if v.kind in kinds:
+            locations.add(v.location)
 
     ftps = get_ftps(
         ftps_host=ftps_host,
@@ -254,9 +251,10 @@ def download(
         callback=months_callback,
         help=YEAR_MONTH_MATCH_ERROR_MESSAGE,
     ),
-    agent: Optional[str] = typer.Option(
-        None, help="Agent's asic code, required for private files"
-    ),
+    agent: Optional[str] = typer.Option(...,
+                                        envvar="ASIC_AGENT",
+                                        prompt=True,
+                                        help="Agent's asic code, required for private files"),
     kinds: Optional[list[str]] = typer.Option(
         None,
         "--kind",
@@ -287,9 +285,10 @@ def download(
     ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
     verbosity = ctx.meta["VERBOSITY"]
 
-    locations = PUBLIC_SEARCHEABLE_LOCATIONS
-    if agent is not None:
-        locations = locations.union(PRIVATE_SEARCHEABLE_LOCATIONS)
+    locations: set = set()
+    for v in SUPPORTED_FILE_CLASSES.values():
+        if v.kind in kinds:
+            locations.add(v.location)
 
     ftps = get_ftps(
         ftps_host=ftps_host,
@@ -350,6 +349,8 @@ def download(
             write_to = preprocessed_path.with_suffix(".csv")
             preprocessed.to_csv(
                 write_to,
+                index=False,
+                encoding="utf-8-sig",
             )
 
     ftps.quit()
