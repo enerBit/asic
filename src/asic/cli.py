@@ -41,7 +41,7 @@ def main(
     ftps_port: int = typer.Option(default=210, envvar="ASIC_FTPS_PORT"),
     ftps_user: str = typer.Option(..., envvar="ASIC_FTPS_USER", prompt=True),
     ftps_password: str = typer.Option(..., envvar="ASIC_FTPS_PASSWORD", prompt=True),
-    agent: str = typer.Option(..., envvar="ASIC_AGENT", prompt=True),
+    agent: str = typer.Option(default=None, envvar="ASIC_AGENT", help="Agent's asic code, required for private files"),
 ):
     """
     FTP authentication info should be provided as environment variables (ASIC_FTP_*)
@@ -165,7 +165,7 @@ def list_files(
         callback=months_callback,
         help=YEAR_MONTH_MATCH_ERROR_MESSAGE,
     ),
-    agent: Optional[str] = typer.Option(...,
+    agent: Optional[str] = typer.Option(default=None,
                                         envvar="ASIC_AGENT",
                                         prompt=True,
                                         help="Agent's asic code, required for private files"),
@@ -251,7 +251,7 @@ def download(
         callback=months_callback,
         help=YEAR_MONTH_MATCH_ERROR_MESSAGE,
     ),
-    agent: Optional[str] = typer.Option(...,
+    agent: Optional[str] = typer.Option(default=None,
                                         envvar="ASIC_AGENT",
                                         prompt=True,
                                         help="Agent's asic code, required for private files"),
@@ -347,6 +347,7 @@ def download(
 
             preprocessed = f.preprocess(local)
             write_to = preprocessed_path.with_suffix(".csv")
+            os.makedirs(preprocessed_path.parent, exist_ok=True)
             preprocessed.to_csv(
                 write_to,
                 index=False,

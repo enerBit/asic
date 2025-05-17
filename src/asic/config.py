@@ -1,8 +1,10 @@
 import importlib.resources
 import json as json
+import pathlib
 import re
 from enum import Enum
 from typing import Annotated
+import os
 
 from pydantic import BaseModel, StringConstraints
 
@@ -122,7 +124,7 @@ def load_asic_file_config() -> dict[str, ASICFileConfig]:
     """Return a list of ASIC file configurations"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
-    resource = importlib.resources.files("asic").joinpath("data/ASIC_FILE_CONFIG.jsonl")
+    resource = pathlib.Path(os.getenv("PATH_ASIC_FILE_CONFIG"))
     lines = []
     with resource.open("r") as src:
         for line in src:

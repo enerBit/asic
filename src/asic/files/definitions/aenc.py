@@ -5,6 +5,7 @@ from pathlib import Path, PureWindowsPath
 # Third party imports
 import pandas as pd
 
+from asic import ASIC_FILE_CONFIG
 from asic.files.file import AsicFile, FileKind, VisibilityEnum
 
 # Local application imports
@@ -53,8 +54,8 @@ class AENC(AsicFile):
     kind = FileKind.AENC
     visibility = VisibilityEnum.AGENT
     name_pattern = "(?P<kind>aenc)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
-    location_pattern = "/informacion_xm/USUARIOSK/(?P<location_agent>[a-zA-Z]{4})/SIC/COMERCIA/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
-    location = "/informacion_xm/usuariosk/{location_agent}/sic/comercia/{location_year:04}-{location_month:02}/"
+    location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
+    location = ASIC_FILE_CONFIG[kind].location_template
     description = "Los archivos de demanda de agente por frontera"
     # path = None
     # year = None
@@ -152,20 +153,3 @@ class AENC(AsicFile):
             "VALOR",
         ]
         return total[return_cols]
-
-
-if __name__ == "__main__":
-    import pathlib
-
-    path = pathlib.Path(
-        "./borrar/informacion_xm/UsuariosK/enbc/SIC/COMERCIA/2023-10/aenc1001.Tx2"
-    )
-    purepath = pathlib.PureWindowsPath("/") / pathlib.PureWindowsPath(
-        path.as_posix()
-    ).relative_to("./borrar")
-    file = AENC.from_remote_path(purepath)
-    print(file)
-    data = file.read(path)
-    print(data.head(10))
-    prepro_data = file.preprocess(path)
-    print(prepro_data.head(10))

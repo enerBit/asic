@@ -28,24 +28,24 @@ Listing latest published settlements by ASIC in the last 20 days
 2022-06:TXR -- published: 2022-07-05
 ```
 
-1. Listar los archivos publicados para los meses de mayo y junio de 2022 con version de liquidación .tx3:
+2. Listar los archivos publicados para los meses de mayo y junio de 2022 con version de liquidación .tx3:
 
 ```txt
 > asic list --month 2022-06 --month 2022-05 --version .tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\adem0501.Tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\adem0502.Tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\adem0503.Tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\adem0504.Tx3
+\...\2022-05\adem0501.Tx3
+\...\2022-05\adem0502.Tx3
+\...\2022-05\adem0503.Tx3
+\...\2022-05\adem0504.Tx3
           ...
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\pep0530.tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\pep0531.tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\sntie05.tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\afac05.tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\trsm05.tx3
-\INFORMACION_XM\PUBLICOK\SIC\COMERCIA\2022-05\ldcbmr05.tx3
+\...\2022-05\pep0530.tx3
+\...\2022-05\pep0531.tx3
+\...\2022-05\sntie05.tx3
+\...\2022-05\afac05.tx3
+\...\2022-05\trsm05.tx3
+\...\2022-05\ldcbmr05.tx3
 ```
 
-1. Descargar los archivos publicados para los meses de mayo y junio de 2022 con version de liquidación .tx3 a la carpeta local `./asic-files/`:
+3. Descargar los archivos publicados para los meses de mayo y junio de 2022 con version de liquidación .tx3 a la carpeta local `./asic-files/`:
 
 ```txt
 > asic download --month 2022-06 --month 2022-05 --version .tx3 asic-files
