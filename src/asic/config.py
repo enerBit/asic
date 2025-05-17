@@ -124,7 +124,11 @@ def load_asic_file_config() -> dict[str, ASICFileConfig]:
     """Return a list of ASIC file configurations"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
-    resource = pathlib.Path(os.getenv("PATH_ASIC_FILE_CONFIG"))
+    path_env = os.getenv("PATH_ASIC_FILE_CONFIG")
+    if path_env is None:
+        raise ValueError("PATH_ASIC_FILE_CONFIG environment variable not set")
+
+    resource = pathlib.Path(path_env)
     lines = []
     with resource.open("r") as src:
         for line in src:
