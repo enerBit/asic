@@ -245,6 +245,9 @@ def download(
     is_preprocessing_required: bool = typer.Option(
         False, "--prepro", help="Preprocess each file after donwload"
     ),
+    prepocessed_dir: bool = typer.Option(
+    False, "--prepro-dirs", help="Create directories for preprocessed files if not present"
+    ),
     months: list[str] = typer.Option(
         ...,
         "--month",
@@ -309,7 +312,7 @@ def download(
 
     logger.info(f"Total files to download: {len(file_list)}")
 
-    for f in rich.progress.track(file_list, description="Dowloading files..."):
+    for f in rich.progress.track(file_list, description="Downloading files..."):
         logger.info(f"File: {f.path}")
         remote = f
         local = destination / str(f.path)[1:]  # hack to remove root anchor
@@ -347,11 +350,19 @@ def download(
 
             preprocessed = f.preprocess(local)
             write_to = preprocessed_path.with_suffix(".csv")
-            os.makedirs(preprocessed_path.parent, exist_ok=True)
-            preprocessed.to_csv(
-                write_to,
-                index=False,
-                encoding="utf-8-sig",
-            )
+            try:
+                if prepocessed_dir:
+                    os.makedirs(preprocessed_path.parent, exist_ok=True)
+                preprocessed.to_csv(
+                    write_to,
+                    index=False,
+                    encoding="utf-8-sig",
+                )
+            except Exception as e:
+                if "Cannot save file into a non-existent directory: " in str(e):
+                    raise FileNotFoundError(f"{e}. Use the '--prepro-dirs' flag to create the folder")
+
+                raise e
+
 
     ftps.quit()

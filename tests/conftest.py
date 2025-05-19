@@ -9,7 +9,7 @@ import pathlib
 
 import pytest
 
-FIXTURE_DIR = pathlib.Path(__file__).parent.resolve() / "I"
+FIXTURE_DIR = pathlib.Path(__file__).parent.resolve() / "RUTA"
 
 TESTFILES = pytest.mark.datafiles(
     FIXTURE_DIR,
@@ -18,7 +18,7 @@ TESTFILES = pytest.mark.datafiles(
 
 ALL_FILES = {
     "adem": {
-        "path": "/I/I_P/S/C/2023-10/adem1001.Tx2",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/adem1001.Tx2",
         "kind": "adem",
         "visibility": "public",
         "year": 2023,
@@ -29,7 +29,7 @@ ALL_FILES = {
         "agent": None,
     },
     "aenc": {
-        "path": "/I/I_U/XXXC/S/C/2023-10/aenc1001.Tx2",
+        "path": "/RUTA/PRIVADA/XXXC/DEL/FTP/2023-10/aenc1001.Tx2",
         "kind": "aenc",
         "visibility": "agent",
         "year": 2023,
@@ -40,7 +40,7 @@ ALL_FILES = {
         "agent": "xxxc",
     },
     "balcttos": {
-        "path": "/I/I_U/XXXC/S/C/2023-10/BalCttos1001.tx2",
+        "path": "/RUTA/PRIVADA/XXXC/DEL/FTP/2023-10/BalCttos1001.tx2",
         "kind": "balcttos",
         "visibility": "agent",
         "year": 2023,
@@ -51,7 +51,7 @@ ALL_FILES = {
         "agent": "xxxc",
     },
     "pep": {
-        "path": "/I/I_P/S/C/2023-10/pep1001.tx1",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/pep1001.tx1",
         "kind": "pep",
         "visibility": "public",
         "year": 2023,
@@ -62,7 +62,7 @@ ALL_FILES = {
         "agent": None,
     },
     "PME": {
-        "path": "/I/I_P/S/C/2023-10/PME14001.txa",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/PME14001.txa",
         "kind": "PME",
         "visibility": "public",
         "year": 2023,
@@ -73,7 +73,7 @@ ALL_FILES = {
         "agent": None,
     },
     "trsd": {
-        "path": "/I/I_P/S/C/2023-10/trsd1001.tx2",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/trsd1001.tx2",
         "kind": "trsd",
         "visibility": "public",
         "year": 2023,
@@ -84,7 +84,7 @@ ALL_FILES = {
         "agent": None,
     },
     "tfroc": {
-        "path": "/I/I_U/XXXC/S/C/2023-10/tfroc1001.TxF",
+        "path": "/RUTA/PRIVADA/XXXC/DEL/FTP/2023-10/tfroc1001.TxF",
         "kind": "tfroc",
         "visibility": "agent",
         "year": 2023,
@@ -95,7 +95,7 @@ ALL_FILES = {
         "agent": "xxxc",
     },
     "tgrl": {
-        "path": "/I/I_P/S/C/2023-10/tgrl1001.tx2",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/tgrl1001.tx2",
         "kind": "tgrl",
         "visibility": "public",
         "year": 2023,
@@ -106,7 +106,7 @@ ALL_FILES = {
         "agent": None,
     },
     "tserv": {
-        "path": "/I/I_P/S/C/2023-10/tserv10.txf",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/tserv10.txf",
         "kind": "tserv",
         "visibility": "public",
         "year": 2023,
@@ -117,7 +117,7 @@ ALL_FILES = {
         "agent": None,
     },
     "trsm": {
-        "path": "/I/I_P/S/C/2023-10/trsm10.txf",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/trsm10.txf",
         "kind": "trsm",
         "visibility": "public",
         "year": 2023,
@@ -128,7 +128,7 @@ ALL_FILES = {
         "agent": None,
     },
     "sntie": {
-        "path": "/I/I_P/S/C/2023-10/sntie10.txf",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/sntie10.txf",
         "kind": "sntie",
         "visibility": "public",
         "year": 2023,
@@ -139,7 +139,7 @@ ALL_FILES = {
         "agent": None,
     },
     "afac": {
-        "path": "/I/I_P/S/C/2023-10/afac10.txf",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2023-10/afac10.txf",
         "kind": "afac",
         "visibility": "public",
         "year": 2023,
@@ -150,7 +150,7 @@ ALL_FILES = {
         "agent": None,
     },
     "dspcttos": {
-        "path": "/I/I_U/XXXC/S/C/2023-10/dspcttos1001.TxF",
+        "path": "/RUTA/PRIVADA/XXXC/DEL/FTP/2023-10/dspcttos1001.TxF",
         "kind": "dspcttos",
         "visibility": "agent",
         "year": 2023,

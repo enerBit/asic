@@ -124,9 +124,11 @@ def load_asic_file_config() -> dict[str, ASICFileConfig]:
     """Return a list of ASIC file configurations"""
     # This is a stream-like object. If you want the actual info, call
     # stream.read()
-    path_env = os.getenv("PATH_ASIC_FILE_CONFIG")
+    path_env = os.getenv("ASIC_FILE_CONFIG_PATH")
     if path_env is None:
-        raise ValueError("PATH_ASIC_FILE_CONFIG environment variable not set")
+        raise ValueError("\nASIC_FILE_CONFIG_PATH environment variable not set, you can create the file with the following structure:\n"
+                         """{"code":"adem", "visibility": "public","name_pattern":"(?P<kind>adem)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)", "location_pattern":"/RUTA/PUBLICA/DEL/FTP/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/","description":"Los archivos de demanda comercial"}\n"""
+                         "then save your file as .jsonl and set the file path in the environment variable")
 
     resource = pathlib.Path(path_env)
     lines = []

@@ -7,7 +7,28 @@ Interfaz de línea de comandos para descargar los archivos de las publicaciones 
 > **Requiere acceso al FTP del ASIC en `xmftps.xm.com.co`**
 
 ------
+## 📝 Archivo de configuración necesario
+El sistema requiere que definas la variable de entorno `ASIC_FILE_CONFIG_PATH` apuntando a la ruta del archivo .jsonl que contiene la configuración de los tipos de archivos soportados. 
+Este archivo debe contener objetos JSON en formato newline-delimited (un JSON por línea).
 
+#### Ejemplo de variable de entorno
+```txt
+# Windows
+$Env:ASIC_FILE_CONFIG_PATH = "C:\Users\Usuario\Documents\asic_file_config.jsonl"
+
+# Linux
+export ASIC_FILE_CONFIG_PATH="/home/Usuario/asic_file_config.jsonl"
+
+# Mac
+export ASIC_FILE_CONFIG_PATH="/Users/Usuario/asic_file_config.jsonl"
+```
+### 📋Estructura esperada:
+```json
+{"code":"adem", "visibility": "public","name_pattern":"(?P<kind>adem)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)", "location_pattern":"/RUTA/PUBLICA/DEL/FTP/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/","description":"Los archivos de demanda comercial"}
+```
+
+
+------
 ## Ejemplos
 
 Antes de poder usar los comandos que usan el servir FTP de XM, debes proveer la información de autenticación (se recomienda usar variables de entorno).
@@ -32,17 +53,17 @@ Listing latest published settlements by ASIC in the last 20 days
 
 ```txt
 > asic list --month 2022-06 --month 2022-05 --version .tx3
-\...\2022-05\adem0501.Tx3
-\...\2022-05\adem0502.Tx3
-\...\2022-05\adem0503.Tx3
-\...\2022-05\adem0504.Tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\adem0501.Tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\adem0502.Tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\adem0503.Tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\adem0504.Tx3
           ...
-\...\2022-05\pep0530.tx3
-\...\2022-05\pep0531.tx3
-\...\2022-05\sntie05.tx3
-\...\2022-05\afac05.tx3
-\...\2022-05\trsm05.tx3
-\...\2022-05\ldcbmr05.tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\pep0530.tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\pep0531.tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\sntie05.tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\afac05.tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\trsm05.tx3
+\RUTA\PUBLICA\DEL\FTP\2022-05\ldcbmr05.tx3
 ```
 
 3. Descargar los archivos publicados para los meses de mayo y junio de 2022 con version de liquidación .tx3 a la carpeta local `./asic-files/`:
