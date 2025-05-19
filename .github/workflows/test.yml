@@ -15,7 +15,7 @@ jobs:
     name: Test code
     runs-on: ubuntu-latest
     env:
-      ASIC_CONFIG_PATH: tests/TEST_ASIC_FILE_CONFIG.jsonl
+      PATH_ASIC_FILE_CONFIG: tests/TEST_ASIC_FILE_CONFIG.jsonl
       
     strategy:
       matrix:
