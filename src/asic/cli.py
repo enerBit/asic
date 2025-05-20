@@ -209,6 +209,11 @@ def list_files(
     ftps_password = ctx.meta["ASIC_FTPS_PASSWORD"]
     verbosity = ctx.meta["VERBOSITY"]
 
+    if not extensions:
+        extensions = [None]  # type: ignore
+    if not kinds:
+        kinds = SUPPORTED_FILE_KINDS
+
     locations: set = set()
     for v in SUPPORTED_FILE_CLASSES.values():
         if v.kind in kinds:
@@ -275,6 +280,10 @@ def download(
 
     FTP authentication info should be provided as environment variables (ASIC_FTP_*)
     """
+    if not extensions:
+        extensions = [None]  # type: ignore
+    if not kinds:
+        kinds = SUPPORTED_FILE_KINDS
 
     ftps_host = ctx.meta["ASIC_FTPS_HOST"]
     ftps_port = ctx.meta["ASIC_FTPS_PORT"]
