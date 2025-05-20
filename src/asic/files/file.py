@@ -71,6 +71,7 @@ class FileKind(str, enum.Enum):
     SNTIE = "sntie"
     AFAC = "afac"
     DSPCTTOS = "dspcttos"
+    PTB = "ptb"
 
     # LDCBMR = "ldcbmr"
     # PUBFC = "pubfc"
