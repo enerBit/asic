@@ -108,7 +108,7 @@ class AsicFile(ABC):
     name_pattern: str
     location_pattern: str
     location: str
-    description: str
+    description: str | None
 
     @property
     @abstractmethod
