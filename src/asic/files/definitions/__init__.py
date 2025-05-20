@@ -5,6 +5,7 @@ from asic.files.definitions.aenc import AENC
 from asic.files.definitions.balcttos import BALCTTOS
 from asic.files.definitions.pep import PEP
 from asic.files.definitions.pme import PME
+from asic.files.definitions.ptb import PTB
 from asic.files.definitions.trsd import TRSD
 from asic.files.definitions.tfroc import TFROC
 from asic.files.definitions.tgrl import TGRL
@@ -29,6 +30,7 @@ SUPPORTED_FILE_CLASSES: dict[FileKind, Type[AsicFile]] = {
     FileKind.SNTIE: SNTIE,
     FileKind.AFAC: AFAC,
     FileKind.DSPCTTOS: DSPCTTOS,
+    FileKind.PTB: PTB,
 }
 
 

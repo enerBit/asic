@@ -29,10 +29,11 @@ FORMAT = {
 class TSERV(AsicFile):
     kind = FileKind.TSERV
     visibility = VisibilityEnum.PUBLIC
-    name_pattern = "(?P<kind>tserv)(?P<name_month>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Contiene el soporte a la liquidación de servicios CND, SIC y FAZNI."
+    description = ASIC_FILE_CONFIG[kind].description
+
     _format = FORMAT
 
     @property

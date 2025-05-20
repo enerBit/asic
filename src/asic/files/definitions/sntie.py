@@ -52,10 +52,10 @@ FORMAT = {
 class SNTIE(AsicFile):
     kind = FileKind.SNTIE
     visibility = VisibilityEnum.PUBLIC
-    name_pattern = "(?P<kind>sntie)(?P<name_month>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Ajuste final de transacciones TIE, denominados Saldos Netos TIE, que se calcula a partir de la diferencia, de los precios informados por el Administrador del Mercado Exportador en la liquidación final, respecto a los valores obtenidos en la segunda liquidación."
+    description = ASIC_FILE_CONFIG[kind].description
 
     _format = FORMAT
 

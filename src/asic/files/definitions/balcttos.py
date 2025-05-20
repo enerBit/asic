@@ -53,7 +53,7 @@ FORMAT = {
 class BALCTTOS(AsicFile):
     kind = FileKind.BALCTTOS
     visibility = VisibilityEnum.AGENT
-    name_pattern = "(?P<kind>BalCttos)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
     description = "Los archivos de despacho de demanda por mercados R y NR, Nacional, TIE e Internacional"

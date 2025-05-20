@@ -32,10 +32,11 @@ FORMAT = {
 class TFROC(AsicFile):
     kind = FileKind.TFROC
     visibility = VisibilityEnum.AGENT
-    name_pattern = "(?P<kind>tfroc)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Los archivos de factores de perdidas aplicables a los consumos"
+    description = ASIC_FILE_CONFIG[kind].description
+
     _format = FORMAT
 
     @property
