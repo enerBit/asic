@@ -41,7 +41,7 @@ def main(
     ftps_port: int = typer.Option(default=210, envvar="ASIC_FTPS_PORT"),
     ftps_user: str = typer.Option(..., envvar="ASIC_FTPS_USER", prompt=True),
     ftps_password: str = typer.Option(..., envvar="ASIC_FTPS_PASSWORD", prompt=True),
-    agent: str = typer.Option(..., envvar="ASIC_AGENT", prompt=True),
+    agent: str = typer.Option(default=None, envvar="ASIC_AGENT", help="Agent's asic code, required for private files"),
 ):
     """
     FTP authentication info should be provided as environment variables (ASIC_FTP_*)
@@ -111,6 +111,9 @@ def months_callback(values: list[str]) -> list[str]:
 
 
 def file_kinds_callback(values: list[str]) -> list[str]:
+    if values is None:
+        raise typer.BadParameter(SUPPORTED_FILE_KINDS_ERROR_MESSAGE)
+
     files = sorted(
         {validate_file_kind(v) for v in values},
         reverse=True,
@@ -165,7 +168,7 @@ def list_files(
         callback=months_callback,
         help=YEAR_MONTH_MATCH_ERROR_MESSAGE,
     ),
-    agent: Optional[str] = typer.Option(...,
+    agent: Optional[str] = typer.Option(default=None,
                                         envvar="ASIC_AGENT",
                                         prompt=True,
                                         help="Agent's asic code, required for private files"),
@@ -245,13 +248,16 @@ def download(
     is_preprocessing_required: bool = typer.Option(
         False, "--prepro", help="Preprocess each file after donwload"
     ),
+    prepocessed_dir: bool = typer.Option(
+    False, "--prepro-dirs", help="Create directories for preprocessed files if not present"
+    ),
     months: list[str] = typer.Option(
         ...,
         "--month",
         callback=months_callback,
         help=YEAR_MONTH_MATCH_ERROR_MESSAGE,
     ),
-    agent: Optional[str] = typer.Option(...,
+    agent: Optional[str] = typer.Option(default=None,
                                         envvar="ASIC_AGENT",
                                         prompt=True,
                                         help="Agent's asic code, required for private files"),
@@ -309,7 +315,7 @@ def download(
 
     logger.info(f"Total files to download: {len(file_list)}")
 
-    for f in rich.progress.track(file_list, description="Dowloading files..."):
+    for f in rich.progress.track(file_list, description="Downloading files..."):
         logger.info(f"File: {f.path}")
         remote = f
         local = destination / str(f.path)[1:]  # hack to remove root anchor
@@ -347,10 +353,19 @@ def download(
 
             preprocessed = f.preprocess(local)
             write_to = preprocessed_path.with_suffix(".csv")
-            preprocessed.to_csv(
-                write_to,
-                index=False,
-                encoding="utf-8-sig",
-            )
+            try:
+                if prepocessed_dir:
+                    os.makedirs(preprocessed_path.parent, exist_ok=True)
+                preprocessed.to_csv(
+                    write_to,
+                    index=False,
+                    encoding="utf-8-sig",
+                )
+            except Exception as e:
+                if "Cannot save file into a non-existent directory: " in str(e):
+                    raise FileNotFoundError(f"{e}. Use the '--prepro-dirs' flag to create the folder")
+
+                raise e
+
 
     ftps.quit()

@@ -8,7 +8,7 @@ import pandas as pd
 import pydantic
 from typing_extensions import Self
 
-from asic import ASIC_FILE_EXTENSION_MAP
+from asic import ASIC_FILE_EXTENSION_MAP, ASIC_FILE_CONFIG
 from asic.reader import FileReader
 
 PATTERN_REGEX = re.compile(

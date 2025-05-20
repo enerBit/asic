@@ -8,6 +8,8 @@
 # Do not ignore test files
 !tests/**/*.tx*
 !tests/**/*.csv
+
+ASIC_FILE_CONFIG.jsonl
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

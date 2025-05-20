@@ -5,6 +5,7 @@ from pathlib import Path, PureWindowsPath
 
 import pandas as pd
 
+from asic import ASIC_FILE_CONFIG
 from asic.files.file import AsicFile, FileKind, VisibilityEnum
 
 logger = logging.getLogger(__name__)
@@ -26,8 +27,8 @@ class TRSM(AsicFile):
     kind = FileKind.TRSM
     visibility = VisibilityEnum.PUBLIC
     name_pattern = "(?P<kind>trsm)(?P<name_month>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
-    location_pattern = "/informacion_xm/publicok/sic/comercia/(?P<location_year>[0-9]{4})-(?P<location_month>[0-9]{2})/"
-    location = "/informacion_xm/publicok/sic/comercia/{location_year:04}-{location_month:02}/"
+    location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
+    location = ASIC_FILE_CONFIG[kind].location_template
     description = "Contiene información de indicadores económicos, energéticos y financieros."
     _format = FORMAT
 
