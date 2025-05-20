@@ -23,10 +23,10 @@ FORMAT = {
 class PEP(AsicFile):
     kind = FileKind.PEP
     visibility = VisibilityEnum.PUBLIC
-    name_pattern = "(?P<kind>pep)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Contiene información de los precios de escasez promedio ponderado por sistema y por agente. Resolución 140 de 2017"
+    description = ASIC_FILE_CONFIG[kind].description
 
     _format = FORMAT
 

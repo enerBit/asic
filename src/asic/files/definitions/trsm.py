@@ -26,10 +26,11 @@ FORMAT = {
 class TRSM(AsicFile):
     kind = FileKind.TRSM
     visibility = VisibilityEnum.PUBLIC
-    name_pattern = "(?P<kind>trsm)(?P<name_month>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Contiene información de indicadores económicos, energéticos y financieros."
+    description = ASIC_FILE_CONFIG[kind].description
+
     _format = FORMAT
 
     @property

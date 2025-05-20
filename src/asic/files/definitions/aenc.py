@@ -53,10 +53,10 @@ FORMAT = {
 class AENC(AsicFile):
     kind = FileKind.AENC
     visibility = VisibilityEnum.AGENT
-    name_pattern = "(?P<kind>aenc)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Los archivos de demanda de agente por frontera"
+    description = ASIC_FILE_CONFIG[kind].description
     # path = None
     # year = None
     # month = None

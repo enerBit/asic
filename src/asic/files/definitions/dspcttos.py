@@ -77,10 +77,10 @@ FORMAT = {
 class DSPCTTOS(AsicFile):
     kind = FileKind.DSPCTTOS
     visibility = VisibilityEnum.AGENT
-    name_pattern = "(?P<kind>dspcttos)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Información de los contratos que fueron incluidos en el despacho del respectivo día, para cada agente según sea su posición en el contrato de comprador o de vendedor, para comercializadores."
+    description = ASIC_FILE_CONFIG[kind].description
     _format = FORMAT
 
     @property
