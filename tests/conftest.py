@@ -161,7 +161,7 @@ ALL_FILES = {
         "agent": "xxxc",
     },
     "ptb": {
-        "path": "/RUTA/PUBLICA/DEL/FTP/2025-04/ptb0401.txf",
+        "path": "/RUTA/PUBLICA/DEL/FTP/2025-04/PTB0401.txf",
         "kind": "ptb",
         "visibility": "public",
         "year": 2025,
