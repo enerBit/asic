@@ -160,4 +160,15 @@ ALL_FILES = {
         "version": "003",
         "agent": "xxxc",
     },
+    "ptb": {
+        "path": "/RUTA/PUBLICA/DEL/FTP/2025-04/PTB0401.txf",
+        "kind": "ptb",
+        "visibility": "public",
+        "year": 2025,
+        "month": 4,
+        "day": 1,
+        "extension": ".txf",
+        "version": "003",
+        "agent": None,
+    },
 }

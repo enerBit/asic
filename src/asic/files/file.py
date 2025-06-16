@@ -71,6 +71,7 @@ class FileKind(str, enum.Enum):
     SNTIE = "sntie"
     AFAC = "afac"
     DSPCTTOS = "dspcttos"
+    PTB = "ptb"
 
     # LDCBMR = "ldcbmr"
     # PUBFC = "pubfc"
@@ -107,7 +108,7 @@ class AsicFile(ABC):
     name_pattern: str
     location_pattern: str
     location: str
-    description: str
+    description: str | None
 
     @property
     @abstractmethod

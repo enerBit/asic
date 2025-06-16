@@ -54,10 +54,10 @@ FORMAT = {
 class ADEM(AsicFile):
     kind = FileKind.ADEM
     visibility = VisibilityEnum.PUBLIC
-    name_pattern = "(?P<kind>adem)(?P<name_month>[0-9]{2})(?P<name_day>[0-9]{2}).(?P<ext_versioned>[tT]{1}[xX]{1}[a-zA-Z0-9]+)"
+    name_pattern = ASIC_FILE_CONFIG[kind].name_pattern
     location_pattern = ASIC_FILE_CONFIG[kind].location_pattern
     location = ASIC_FILE_CONFIG[kind].location_template
-    description = "Los archivos de demanda comercial"
+    description = ASIC_FILE_CONFIG[kind].description
 
     _format = FORMAT
 
@@ -104,8 +104,6 @@ class ADEM(AsicFile):
 
         filter = np.full(total.index.shape, True)
         filter = filter & (total["CODIGO"].isin(["DMRE", "PRRE"]))
-        if self.agent is not None:
-            filter = filter & (total["AGENTE"] == self.agent.upper())
 
         total = total[filter]
         total["FECHA"] = pd.to_datetime(
