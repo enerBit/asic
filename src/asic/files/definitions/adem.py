@@ -97,13 +97,15 @@ class ADEM(AsicFile):
         EPSC: Código SIC del agente comercializador
         CODIGO:
         DMRE: demanda regulada
+        DMNR: demanda no regulada
         PRRE: perdidas reguladas
+        PRNR: perdidas no reguladas
         """
         total = self.read(target)
         total["FECHA"] = f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
 
         filter = np.full(total.index.shape, True)
-        filter = filter & (total["CODIGO"].isin(["DMRE", "PRRE"]))
+        filter = filter & (total["CODIGO"].isin(["DMRE", "PRRE","DMNR","PRNR"]))
 
         total = total[filter]
         total["FECHA"] = pd.to_datetime(
@@ -145,6 +147,6 @@ class ADEM(AsicFile):
             )
         ]
         total.columns = cols  # type: ignore
-        return_cols = ["FECHA_HORA", "AGENTE", "DMRE_VALOR", "PRRE_VALOR"]
+        return_cols = ["FECHA_HORA", "AGENTE", "DMRE_VALOR", "PRRE_VALOR","DMNR_VALOR","PRNR_VALOR"]
         return total[return_cols]
 

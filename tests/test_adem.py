@@ -38,4 +38,5 @@ def test_adem_read(adem_file: ADEM, local_adem_file):
 @TESTFILES
 def test_adem_preprocess(adem_file: ADEM, local_adem_file):
     long_data = adem_file.preprocess(local_adem_file)
-    assert len(long_data) == 1128
+    print(len(long_data))
+    assert len(long_data) == 1536

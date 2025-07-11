@@ -9,7 +9,7 @@ from .conftest import ALL_FILES, TESTFILES
 
 @fixture
 def ptb_remote_path():
-    ptb_path = ALL_FILES["ptb"]["path"]
+    ptb_path = ALL_FILES["PTB"]["path"]
     path = pathlib.PureWindowsPath(ptb_path)
     return path
 
