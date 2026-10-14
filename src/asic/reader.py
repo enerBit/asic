@@ -53,7 +53,7 @@ class FileReader:
         else:
             raise ValueError(f"Not supported 'type': '{file_type}'")
 
-        if dt_fields is not None:
+        if dt_fields is not None and not res.empty:
             res = self._date_converter(res, dt_fields)
 
         logger.info(f"Read {res.shape[0]} rows and {res.shape[1]} columns")

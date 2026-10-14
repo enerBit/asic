@@ -73,6 +73,7 @@ class FileKind(str, enum.Enum):
     DSPCTTOS = "dspcttos"
     PTB = "PTB"
     CURT = "curt"
+    FRONTERAS = "fronteras"
 
     # LDCBMR = "ldcbmr"
     # PUBFC = "pubfc"
@@ -81,7 +82,6 @@ class FileKind(str, enum.Enum):
     # DESBM = "desbm"
     # DESBMEX = "desbmex"
     # OEFAGNCH = "oefagnch"
-    # FRONTERAS = "fronterascomerciales"
 
 
 class AsicFileMetadataInput(pydantic.BaseModel):

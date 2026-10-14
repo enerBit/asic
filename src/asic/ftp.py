@@ -153,9 +153,14 @@ def list_supported_files(
             )
             continue
         logger.debug(f"Listing remote location: {remote_location}")
-        files_in_location = list_supported_files_in_location(
-            ftp, remote_location, month, kinds, ext
-        )
+        try:
+            files_in_location = list_supported_files_in_location(
+                ftp, remote_location, month, kinds, ext
+            )
+        except ftplib.error_perm as e:
+            # Carpeta inexistente o sin permisos (ej. fronteras, publicación esporádica)
+            logger.warning(f"Skipping remote location {remote_location}: {e}")
+            continue
         file_list.extend(files_in_location)
 
     return file_list
