@@ -150,6 +150,21 @@ class AsicFile(ABC):
     def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         pass
 
+    def validate_raw(self, raw_bytes: bytes) -> bool:
+        fmt = self._format
+        dtype: dict[str, type] = fmt.get("dtype", {})
+        if not dtype:
+            return True
+        sep: str = fmt.get("sep", ",")
+        encoding: str = fmt.get("encoding", "utf-8")
+        try:
+            first_line = raw_bytes.decode(encoding).split("\n")[0].rstrip("\r")
+            actual_columns = {c.strip() for c in first_line.split(sep)}
+            expected_columns = {k.strip() for k in dtype.keys()}
+            return actual_columns.issubset(expected_columns)
+        except Exception:
+            return False
+
     @property
     @abstractmethod
     def _format(self) -> dict:

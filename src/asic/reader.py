@@ -29,7 +29,18 @@ class FileReader:
         logger.debug(f"Reading as {file_type}: {target}")
 
         if file_type in ["csv", "txt", "tsv"]:
-            res = pd.read_csv(target, **_def)
+            encoding = _def.get("encoding", "utf-8-sig")
+            fallback = "cp1252" if encoding.replace("-", "_").lower() in ("utf_8", "utf_8_sig", "utf8") else "utf-8-sig"
+            try:
+                res = pd.read_csv(target, **_def)
+            except UnicodeDecodeError:
+                logger.warning(
+                    f"Failed to read with encoding '{encoding}', retrying with '{fallback}'"
+                )
+                if hasattr(target, "seek"):
+                    target.seek(0)
+                _def["encoding"] = fallback
+                res = pd.read_csv(target, **_def)
 
         elif file_type in ["xls", "xlsx"]:
             if "sheet_name" in _def:

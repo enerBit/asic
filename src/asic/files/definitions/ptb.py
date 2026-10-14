@@ -35,6 +35,7 @@ FORMAT = {
         "GIz": float,
         "GIv": float,
         "GINAL_NDC": float,
+        "GI_COM": float,
     },
 }
 
@@ -85,7 +86,7 @@ class PTB(AsicFile):
         total = self.read(target)
 
         total["FECHA"] = pd.to_datetime(
-            total["FECHA"],
+            total["FECHA"].str.strip(),
             format="%Y-%m-%d",
         )
 
