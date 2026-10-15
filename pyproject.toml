@@ -59,8 +59,7 @@ pattern = "^(?P<version>.+)$"
 packages = ["src/asic"]
 
 [tool.hatch.build.targets.sdist]
-packages = ["src/asic"]
-include = ["/tests"]
+include = ["/src", "/tests"]
 
 [tool.pytest.ini_options]
 pythonpath = "src"

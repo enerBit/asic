@@ -2,7 +2,7 @@ import datetime as dt
 import logging
 import os
 import pathlib
-from typing import Optional
+from typing import List, Optional
 
 import pydantic
 import rich
@@ -105,12 +105,13 @@ def validate_version(version: str) -> str:
     return version
 
 
-def months_callback(values: list[str]) -> list[str]:
+# typing.List (no list[str]): en Python 3.10 versiones recientes de typer fallan con issubclass sobre list[str]
+def months_callback(values: List[str]) -> list[str]:
     months = sorted({validate_month(v) for v in values}, reverse=True)
     return months
 
 
-def file_kinds_callback(values: list[str]) -> list[str]:
+def file_kinds_callback(values: List[str]) -> list[str]:
     if values is None:
         raise typer.BadParameter(SUPPORTED_FILE_KINDS_ERROR_MESSAGE)
 
@@ -122,7 +123,7 @@ def file_kinds_callback(values: list[str]) -> list[str]:
     return files
 
 
-def extensions_callback(values: list[str] | None) -> list[str]:
+def extensions_callback(values: Optional[List[str]]) -> list[str]:
     # Opcional: archivos sin versión ASIC (ej. fronteras .xlsx) no aplican filtro
     if not values:
         return []

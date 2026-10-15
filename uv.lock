@@ -33,7 +33,7 @@ wheels = [
 
 [[package]]
 name = "asic"
-version = "0.4.5"
+version = "0.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
