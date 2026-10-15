@@ -15,6 +15,7 @@ from asic.files.definitions.sntie import SNTIE
 from asic.files.definitions.afac import AFAC
 from asic.files.definitions.dspcttos import DSPCTTOS
 from asic.files.definitions.curt import CURT
+from asic.files.definitions.fronteras import FRONTERAS
 from asic.files.file import AsicFile, FileKind
 
 SUPPORTED_FILE_CLASSES: dict[FileKind, Type[AsicFile]] = {
@@ -32,7 +33,8 @@ SUPPORTED_FILE_CLASSES: dict[FileKind, Type[AsicFile]] = {
     FileKind.AFAC: AFAC,
     FileKind.DSPCTTOS: DSPCTTOS,
     FileKind.PTB: PTB,
-    FileKind.CURT: CURT
+    FileKind.CURT: CURT,
+    FileKind.FRONTERAS: FRONTERAS,
 }
 
 

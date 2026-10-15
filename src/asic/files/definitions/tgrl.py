@@ -18,6 +18,7 @@ FORMAT = {
     "dt_fields": {},
     "dtype": {
         "CODIGO": str,
+        "AGENTE": str,
         "CONTENIDO": str,
         "HORA 01": float,
         "HORA 02": float,

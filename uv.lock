@@ -3,8 +3,6 @@ requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version < '3.11'",
     "python_full_version == '3.11.*'",
-    "python_full_version < '3.11'",
-    "python_full_version == '3.11.*'",
     "python_full_version == '3.12.*'",
     "python_full_version >= '3.13'",
 ]
@@ -35,12 +33,13 @@ wheels = [
 
 [[package]]
 name = "asic"
-version = "0.2.5"
+version = "0.4.5"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "html5lib" },
     { name = "httpx" },
+    { name = "openpyxl" },
     { name = "pandas" },
     { name = "pydantic" },
     { name = "pytest-cov" },
@@ -64,6 +63,7 @@ requires-dist = [
     { name = "beautifulsoup4" },
     { name = "html5lib" },
     { name = "httpx", specifier = ">=0.27.2" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas" },
     { name = "pydantic" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
@@ -124,7 +124,7 @@ name = "click"
 version = "8.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/96/d3/f04c7bfcf5c1862a2a5b845c6b2b360488cf47af55dfa79c98f6a6bf98b5/click-8.1.7.tar.gz", hash = "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de", size = 336121 }
 wheels = [
@@ -202,6 +202,15 @@ wheels = [
 [package.optional-dependencies]
 toml = [
     { name = "tomli", marker = "python_full_version <= '3.11'" },
+]
+
+[[package]]
+name = "et-xmlfile"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/38/af70d7ab1ae9d4da450eeec1fa3918940a5fafb9055e934af8d6eb0c2313/et_xmlfile-2.0.0.tar.gz", hash = "sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54", size = 17234 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl", hash = "sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa", size = 18059 },
 ]
 
 [[package]]
@@ -410,6 +419,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/92/ed/88a08b5b66bd37234a901f68b4df2beb1dc01d8a955e071991fd0ee9b4fe/numpy-2.1.0-pp310-pypy310_pp73-macosx_14_0_x86_64.whl", hash = "sha256:e5f0642cdf4636198a4990de7a71b693d824c56a757862230454629cf62e323d", size = 6748666 },
     { url = "https://files.pythonhosted.org/packages/61/bb/ba8edcb7f6478b656b1cb94331adb700c8bc06d51c3519fc647fd37dad24/numpy-2.1.0-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f15976718c004466406342789f31b6673776360f3b1e3c575f25302d7e789575", size = 16139681 },
     { url = "https://files.pythonhosted.org/packages/92/19/0a05f78c3557ad3ecb0da85e3eb63cb1527a7ea31a521d11a4f08f753f59/numpy-2.1.0-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:6c1de77ded79fef664d5098a66810d4d27ca0224e9051906e634b3f7ead134c2", size = 12788122 },
+]
+
+[[package]]
+name = "openpyxl"
+version = "3.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "et-xmlfile" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3d/f9/88d94a75de065ea32619465d2f77b29a0469500e99012523b91cc4141cd1/openpyxl-3.1.5.tar.gz", hash = "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050", size = 186464 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl", hash = "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2", size = 250910 },
 ]
 
 [[package]]

@@ -89,17 +89,24 @@ class SNTIE(AsicFile):
 
     def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         """
-        tgrl: se publica un archivo por día.
-        versiones: TX2, TXR ,TXF, TXn
-        CODIGO:
-            EBRC: Energía en bolsa regulada a cargo, en kWh.
-            EBOC: Energía en bolsa no regulada a cargo, en kWh.
+        sntie: es un archivo mensual.
+        versiones: TX2, TXR, TXF, TXn
+        CONCEPTO:
+            DSNTF: Distribución Saldo Neto TIE Fuera de Mérito.
+            PSNTF: Porcentaje para Distribución de Saldo Neto TIE Fuera de Mérito.
+            ASNTF: Acumulado del Saldo Neto TIE Fuera de Mérito.
+            DSNTM: Distribución Saldo Neto TIE en Mérito.
+            PSNTM: Porcentaje para Distribución de Saldo Neto TIE en Mérito.
+            ASNTM: Acumulado del Saldo Neto TIE en Mérito.
+        BANDERA:
+            S: Si el valor presenta mérito.
+            N: Si el valor no presenta mérito.
         AGENTE:
             ENBC: Código SIC del agente comercializador
         """
         total = self.read(target)
         total["FECHA"] = pd.to_datetime(
-            total["FECHA"],
+            total["FECHA"].str.strip(),
             format="%Y-%m-%d",
         )
         total = total.set_index(["AGENTE","CONCEPTO", "BANDERA", "FECHA"]).stack().reset_index()

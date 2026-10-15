@@ -76,14 +76,7 @@ def pattern_to_template_replacement(match_object: re.Match) -> str:
     template_key = match_object["capture_name"]
     regex = match_object["regex"]
     match template_key:
-        case (
-            "location_month"
-            | "name_month"
-            | "location_day"
-            | "name_day"
-            | "location_year"
-            | "name_year"
-        ):
+        case "location_month" | "name_month" | "location_day" | "name_day" | "location_year" | "name_year":
             quant_match = PATTERN_REGEX_EXACT_QUANTIFIER.match(regex)
             if quant_match is not None:
                 quantifier_template = f":0{quant_match['exact_quantifier']}"

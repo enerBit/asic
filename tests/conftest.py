@@ -182,4 +182,15 @@ ALL_FILES = {
         "version": "003",
         "agent": None,
     },
+    "fronteras": {
+        "path": "/RUTA/PRIVADA/XXXC/DEL/FTP/2026-09/XXXC_FronterasComerciales_01-09-2026.xlsx",
+        "kind": "fronteras",
+        "visibility": "agent",
+        "year": 2026,
+        "month": 9,
+        "day": 1,
+        "extension": ".xlsx",
+        "version": None,
+        "agent": "xxxc",
+    },
 }

@@ -122,9 +122,10 @@ def file_kinds_callback(values: list[str]) -> list[str]:
     return files
 
 
-def extensions_callback(values: list[str]) -> list[str]:
-    if values is None:
-        raise typer.BadParameter(SUPPORTED_EXTENSIONS_ERROR_MESSAGE)
+def extensions_callback(values: list[str] | None) -> list[str]:
+    # Opcional: archivos sin versión ASIC (ej. fronteras .xlsx) no aplican filtro
+    if not values:
+        return []
 
     extensions = list({validate_version(v) for v in values})
 

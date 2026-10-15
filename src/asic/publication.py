@@ -22,13 +22,27 @@ class ASICVersionPublication(pydantic.BaseModel):
     published_at: dt.datetime
 
 
+_SPANISH_MONTH_MAP = {
+    "ene": "jan", "feb": "feb", "mar": "mar", "abr": "apr",
+    "may": "may", "jun": "jun", "jul": "jul", "ago": "aug",
+    "sep": "sep", "oct": "oct", "nov": "nov", "dic": "dec",
+}
+
+
+def _normalize_spanish_month(date_str: str) -> str:
+    parts = date_str.lower().split()
+    if parts and parts[0] in _SPANISH_MONTH_MAP:
+        parts[0] = _SPANISH_MONTH_MAP[parts[0]]
+    return " ".join(parts)
+
+
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/80.0.3987.149 Safari/537.36"
 )
 ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE: dict[str, typing.Any] = {
-    "url": "https://neptuno.xm.com.co/Admon_Mcdo/Liquidacion/versionesliq.htm",
+    "url": "https://api-portalxm.xm.com.co/administracion-archivos/ficheros/descarga-archivo?ruta=Energia%20y%20Mercado/Procesos%20de%20liquidaci%C3%B3n%20y%20facturaci%C3%B3n/Versiones%20y%20fechas%20%C3%BAltimas%20liquidaciones%20mensuales/versionesliq.htm&nombreBlobContainer=storageportalxm",
     "table-index": 1,
     "encoding": "cp1252",
     "month_settlement_format": r"%b %Y",
@@ -71,7 +85,7 @@ def get_monthly_pubs_table() -> pd.DataFrame:
     table_index: int = ASIC_MONTHLY_VERSION_PUBLICATION_SERVICE["table-index"]
 
     logger.debug(f"Getting content from '{url}'")
-    res = httpx.get(url, headers=headers, verify=False)
+    res = httpx.get(url, headers=headers, verify=False, timeout=30)
     res.raise_for_status()
 
     html_text = typing.cast(str, res.content)
@@ -95,7 +109,8 @@ def prepare_published_versions_to_objects(
     assert list(table_cols.values()) == list(versions_table)
 
     versions_table[table_cols["month"]] = pd.to_datetime(
-        versions_table[table_cols["month"]], format=month_settlement_format
+        versions_table[table_cols["month"]].map(_normalize_spanish_month),
+        format=month_settlement_format,
     )
 
     versions_table[table_cols["published_at"]] = pd.to_datetime(
