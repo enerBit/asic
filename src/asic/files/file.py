@@ -1,4 +1,5 @@
 import enum
+import logging
 import re
 from abc import ABC, abstractmethod
 from io import BytesIO, StringIO
@@ -10,6 +11,8 @@ from typing_extensions import Self
 
 from asic import ASIC_FILE_EXTENSION_MAP, ASIC_FILE_CONFIG
 from asic.reader import FileReader
+
+logger = logging.getLogger(__name__)
 
 PATTERN_REGEX = re.compile(
     pattern=r"""
@@ -160,10 +163,26 @@ class AsicFile(ABC):
         try:
             first_line = raw_bytes.decode(encoding).split("\n")[0].rstrip("\r")
             actual_columns = {c.strip() for c in first_line.split(sep)}
-            expected_columns = {k.strip() for k in dtype.keys()}
-            return actual_columns.issubset(expected_columns)
         except Exception:
             return False
+
+        required_columns = fmt.get("required_columns")
+        if required_columns is None:
+            expected_columns = {k.strip() for k in dtype.keys()}
+            return actual_columns.issubset(expected_columns)
+
+        # Esquema dinámico: solo se exigen las columnas estructurales; las
+        # columnas desconocidas se aceptan y se reportan en el log.
+        missing_columns = {c.strip() for c in required_columns} - actual_columns
+        if missing_columns:
+            logger.error(f"{self.kind.value}: missing required columns {sorted(missing_columns)}")
+            return False
+        known_columns = fmt.get("known_columns")
+        if known_columns is not None:
+            new_columns = actual_columns - {c.strip() for c in known_columns}
+            if new_columns:
+                logger.warning(f"{self.kind.value}: unknown columns {sorted(new_columns)}")
+        return True
 
     @property
     @abstractmethod

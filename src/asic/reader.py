@@ -25,6 +25,9 @@ class FileReader:
         _def = self.file_def.copy()
         file_type = _def.pop("type", None)
         dt_fields = _def.pop("dt_fields", None)
+        # Metadatos de validación, no son argumentos de pandas.
+        _def.pop("required_columns", None)
+        _def.pop("known_columns", None)
 
         logger.debug(f"Reading as {file_type}: {target}")
 
