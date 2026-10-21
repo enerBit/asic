@@ -153,16 +153,23 @@ class AsicFile(ABC):
     def preprocess(self, target: Path | BytesIO | StringIO) -> pd.DataFrame:
         pass
 
+    def _read_raw_header(self, raw_bytes: bytes) -> set[str]:
+        fmt = self._format
+        if fmt.get("type") in ("xls", "xlsx"):
+            header = pd.read_excel(BytesIO(raw_bytes), sheet_name=fmt["sheet_name"], nrows=0)
+            return {str(c).strip() for c in header.columns}
+        sep: str = fmt.get("sep", ",")
+        encoding: str = fmt.get("encoding", "utf-8")
+        first_line = raw_bytes.decode(encoding).split("\n")[0].rstrip("\r")
+        return {c.strip() for c in first_line.split(sep)}
+
     def validate_raw(self, raw_bytes: bytes) -> bool:
         fmt = self._format
         dtype: dict[str, type] = fmt.get("dtype", {})
         if not dtype:
             return True
-        sep: str = fmt.get("sep", ",")
-        encoding: str = fmt.get("encoding", "utf-8")
         try:
-            first_line = raw_bytes.decode(encoding).split("\n")[0].rstrip("\r")
-            actual_columns = {c.strip() for c in first_line.split(sep)}
+            actual_columns = self._read_raw_header(raw_bytes)
         except Exception:
             return False
 

@@ -47,7 +47,7 @@ class FileReader:
 
         elif file_type in ["xls", "xlsx"]:
             if "sheet_name" in _def:
-                res = pd.read_excel(str(target), **_def)
+                res = pd.read_excel(target, **_def)
             else:
                 raise ValueError(
                     "Missing 'sheet_name' in file_def. Can only read one Excel sheet structure per FileReader"
